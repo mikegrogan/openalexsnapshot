@@ -1159,54 +1159,46 @@ component accessors="true" extends="helper" {
             inputs.data.funders.clear();
           }
 
-          // AUTHORSCOUNTS
-          // if (inputs.data.keyExists("authorscountsbyyear")){
-          //   for (var counts in line.counts_by_year){
-          //     inputs.data.authorscountsbyyear.append(line.id);
-          //     inputs.data.authorscountsbyyear.append(counts.year);
-          //     inputs.data.authorscountsbyyear.append(counts.works_count);
-          //     inputs.data.authorscountsbyyear.append(counts.cited_by_count);
-          //     inputs.data.authorscountsbyyear.append(counts.oa_works_count);
+          // funders counts
+          if (inputs.data.keyExists("funderscountsbyyear")){
+            for (var counts in line.counts_by_year){
+              inputs.data.funderscountsbyyear.append(line.id);
+              inputs.data.funderscountsbyyear.append(counts.year);
+              inputs.data.funderscountsbyyear.append(counts.works_count);
+              inputs.data.funderscountsbyyear.append(counts.cited_by_count);
 
-          //     inputs.writer.authorscountsbyyear.write(inputs.data.authorscountsbyyear.toList(this.csvDelimiter));
-          //     inputs.writer.authorscountsbyyear.newLine();
-          //     inputs.data.authorscountsbyyear.clear();
-          //   }
-          // }
+              inputs.writer.funderscountsbyyear.write(inputs.data.funderscountsbyyear.toList(this.csvDelimiter));
+              inputs.writer.funderscountsbyyear.newLine();
+              inputs.data.funderscountsbyyear.clear();
+            }
+          }
 
-          // Ids
-          // if (inputs.data.keyExists("authorsids")){
-          //   if (!line.ids.keyExists("orcid")){
-          //     line.ids.orcid = "";
-          //   }
-          //   if (!line.ids.keyExists("scopus")){
-          //     line.ids.scopus = "";
-          //   }
-          //   if (!line.ids.keyExists("twitter")){
-          //     line.ids.twitter = "";
-          //   }
-          //   if (!line.ids.keyExists("wikipedia")){
-          //     line.ids.wikipedia = "";
-          //   }
-          //   if (!line.ids.keyExists("mag")){
-          //     line.ids.mag = "";
-          //   }
+          //Ids
+          if (inputs.data.keyExists("fundersids")){
+            if (!line.ids.keyExists("ror")){
+              line.ids.ror = "";
+            }
+            if (!line.ids.keyExists("wikidata")){
+              line.ids.wikidata = "";
+            }
+            if (!line.ids.keyExists("crossref")){
+              line.ids.crossref = "";
+            }
+            if (!line.ids.keyExists("doi")){
+              line.ids.doi = "";
+            }
 
-          //   inputs.data.authorsids.append(line.id);
-          //   inputs.data.authorsids.append(line.ids.openalex);
-          //   inputs.data.authorsids.append(line.ids.orcid);
-          //   inputs.data.authorsids.append(line.ids.scopus);
-          //   inputs.data.authorsids.append(line.ids.twitter);
-          //   inputs.data.authorsids.append(line.ids.wikipedia);
-          //   inputs.data.authorsids.append(line.ids.mag);
+            inputs.data.fundersids.append(line.id);
+            inputs.data.fundersids.append(line.ids.openalex);
+            inputs.data.fundersids.append(line.ids.ror);
+            inputs.data.fundersids.append(line.ids.wikidata);
+            inputs.data.fundersids.append(line.ids.crossref);
+            inputs.data.fundersids.append(line.ids.doi);
 
-          //   inputs.writer.authorsids.write(inputs.data.authorsids.toList(this.csvDelimiter));
-          //   inputs.writer.authorsids.newLine();
-          //   inputs.data.authorsids.clear();
-
-          
-
-
+            inputs.writer.fundersids.write(inputs.data.fundersids.toList(this.csvDelimiter));
+            inputs.writer.fundersids.newLine();
+            inputs.data.fundersids.clear();
+          }
 
           flushCounter++;
           if (flushCounter == this.getwriteFlushLimit()){
@@ -2492,6 +2484,61 @@ component accessors="true" extends="helper" {
         result.data.funders.success = true;
         result.data.funders.recordcount = qryresult.recordcount;
         outputSuccess("Sucessfully merged #result.data.funders.recordcount# staging funders records with production");
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // funders counts
+    if (activeTables.listFind("funderscountsbyyear")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.funders_counts_by_year dest
+    USING #getSchema()#.stage$funders_counts_by_year src
+    ON (dest.funder_id = src.funder_id AND dest.year = src.year)
+    WHEN MATCHED THEN
+        UPDATE SET
+            dest.works_count = src.works_count,
+            dest.cited_by_count = src.cited_by_count
+    WHEN NOT MATCHED THEN
+        INSERT (funder_id, year, works_count, cited_by_count)
+        VALUES (src.funder_id, src.year, src.works_count, src.cited_by_count)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.funders_counts_by_year.success = true;
+        result.data.funders_counts_by_year.recordcount = qryresult.recordcount;
+        outputSuccess("Sucessfully merged #result.data.funders_counts_by_year.recordcount# staging funders_counts_by_year records with production");
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // funders ids
+    if (activeTables.listFind("fundersids")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.funders_ids dest
+    USING #getSchema()#.stage$funders_ids src
+    ON (dest.funder_id = src.funder_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+            dest.openalex = src.openalex,
+            dest.ror = src.ror,
+            dest.wikidata = src.wikidata,
+            dest.crossref = src.crossref,
+            dest.doi = src.doi
+    WHEN NOT MATCHED THEN
+        INSERT (funder_id, openalex, ror, wikidata, crossref, doi)
+        VALUES (src.funder_id, src.openalex, src.ror, src.wikidata, src.crossref, src.doi)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.funders_ids.success = true;
+        result.data.funders_ids.recordcount = qryresult.recordcount;
+        outputSuccess("Sucessfully merged #result.data.funders_ids.recordcount# staging funders_ids records with production");
       }
       else{
         result.success = false;

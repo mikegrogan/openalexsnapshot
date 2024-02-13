@@ -64,13 +64,13 @@ component accessors="true" extends="helper" {
           name: "funders_counts_by_year",
           id: "funder_id",
           fields: "funder_id,year,works_count,cited_by_count",
-          active: false
+          active: true
         },
         {
           name: "funders_ids",
           id: "funder_id",
           fields: "funder_id,openalex,ror,wikidata,crossref,doi",
-          active: false
+          active: true
         }
       ],
       institutions: [

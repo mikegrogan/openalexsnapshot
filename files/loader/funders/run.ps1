@@ -2,14 +2,14 @@
 param (
     [string]$oraclepath = (Get-Location).Path,
     [string]$environment = "local",
-    [string]$importlist = "funders"
+    [string]$importlist = "funders,funderscountsbyyear,fundersids"
 )
 
 # Call settings script
 . "$oraclepath\..\base.ps1" -oraclepath $oraclepath
 
 # Run Oracle Import
-foreach ($item in $importlist) {
+foreach ($item in $importlistArr) {
     # Clean up old logs
     Remove-Item -Path "logs\$item.*" -Force -ErrorAction SilentlyContinue
 
