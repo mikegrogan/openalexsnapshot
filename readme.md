@@ -114,7 +114,7 @@ Output is logged to the screen as it progresses. Again, this could take quite a 
 # How it works
 
 ## Overview
-![Flow diagram](./css/workflow.png)
+![Flow diagram](./assets/workflow.png)
 
 ## Entity inserts\updates
 The script is essentially syncing data with the OpenAlex [S3 bucket](https://openalex.s3.amazonaws.com/browse.html#data/). The script traverses each entity (e.g. works, sources, publisher, etc.) and first downloads the manifest file, which gives us all snapshot files that need to be downloaded. It then checks the `ENTITYLATESTSYNC` table to see if there's any previous sync records. If so, it'll resume from that point forward. If you ever want to start over, you can clear this table's information.
