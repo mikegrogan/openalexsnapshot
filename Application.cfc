@@ -31,7 +31,7 @@ component {
     Application.environment = ""; // something like local, development, production based on server
     Application.database = {};
     // example to overwrite json file
-    // Application.database = {"connectionstring": "user/password@instance", "datasource": "vpr", "schema": "openalex"};
+    // Application.database = {"connectionstring": "user/password@instance", "datasource": "oa_dsn", "schema": "openalex"};
 
     try{
       // read settings from json file

@@ -46,7 +46,7 @@ Look for the /settings.json assignment under`this.mappings`. Update the relative
 
 ```
 this.mappings = {
-    "/settings.json": (getDirectoryFromPath(getCurrentTemplatePath()) & "../../../../path/to/settings.json")
+    "/settings.json": (getDirectoryFromPath(getCurrentTemplatePath()) & "../../path/to/settings.json")
   };
 ```  
 
@@ -54,7 +54,7 @@ this.mappings = {
 Under `files\loader\settings.ps1` set the $settingsPath variable to point to the settings.json file relative to this folder. This is one extra step, but allows you to run the entity loader scripts (e.g. \loader\authors\run.ps1) outside of Coldfusion, mainly for testing purposes.
 
 ```
-$settingsPath = "..\..\..\..\..\..\..\path\to\settings.json"
+$settingsPath = "..\..\..\..\..\path\to\settings.json"
 ```
 
 ### Coldfusion
