@@ -186,7 +186,6 @@ component accessors="true" extends="helper" {
       case "concepts":
         result = processConceptsData(arguments.snapshotfile);
         break;
-        // todo. not in datamodel
       case "funders":
         result = processFundersData(arguments.snapshotfile);
         break;
@@ -1107,119 +1106,115 @@ component accessors="true" extends="helper" {
     var javaSystem = createObject("java", "java.lang.System");
 
     if (arguments.snapshotfile.success){
+      
       try{
+        var inputs = setupEntityCSVFiles("funders");
         // Create a file object
         var fundersData = fileOpen(arguments.snapshotfile.filepath, "read");
-
-        var funderscsvpath = application.localpath & "loader\funders\csv\funders.csv";
-        // var authorscountscsvpath = application.localpath & "loader\authors\csv\authorscounts.csv";
-        // var authorsidscsvpath = application.localpath & "loader\authors\csv\authorsids.csv";
-
-        // setup CSV files
-        var fundersWriter = createObject("java", "java.io.BufferedWriter").init(
-          createObject("java", "java.io.FileWriter").init(funderscsvpath, this.charset)
-        );
-
-        // var authorsCountsWriter = createObject("java", "java.io.BufferedWriter").init(
-        //   createObject("java", "java.io.FileWriter").init(authorscountscsvpath)
-        // );
-
-        // var authorsIdsWriter = createObject("java", "java.io.BufferedWriter").init(
-        //   createObject("java", "java.io.FileWriter").init(authorsidscsvpath)
-        // );
-
-        // Write headers
-        fundersWriter.write("ID#this.csvDelimiter#ORCID#this.csvDelimiter#DISPLAY_NAME#this.csvDelimiter#DISPLAY_NAME_ALTERNATIVES#this.csvDelimiter#WORKS_COUNT#this.csvDelimiter#CITED_BY_COUNT#this.csvDelimiter#LAST_KNOWN_INSITUTION#this.csvDelimiter#WORKS_API_URL#this.csvDelimiter#UPDATED_DATE");
-        fundersWriter.newLine();
-        // authorsCountsWriter.write("AURHOR_ID#this.csvDelimiter#YEAR#this.csvDelimiter#WORKS_COUNT#this.csvDelimiter#CITED_BY_COUNT#this.csvDelimiter#OA_WORKS_COUNT");
-        // authorsCountsWriter.newLine();
-        // authorsIdsWriter.write("AURHOR_ID#this.csvDelimiter#OPENALEX#this.csvDelimiter#ORCID#this.csvDelimiter#SCOPUS#this.csvDelimiter#TWITTER#this.csvDelimiter#WIKIPEDIA#this.csvDelimiter#MAG");
-        // authorsIdsWriter.newLine();
-
+        
         var flushCounter = 0;
         var counter = 0;
 
-        var authorsArr = [];
-        var authorsCountsArr = [];
-        var authoridsArr = [];
         var line = {};
 
         // loop through rows of data
         while (!fileIsEOF(fundersData)){
           line = fileReadLine(fundersData).deserializeJSON();
 
-          if (!line.keyExists("orcid")){
-            line.orcid = "";
-          }
-          if (!line.keyExists("last_known_insitution")){
-            line.last_known_insitution.id = "";
-          }
+          // funders
+          if (inputs.data.keyExists("funders")){
+            if (!line.keyExists("description")){
+              line.description = "";
+            }
+            if (!line.keyExists("homepage_url")){
+              line.homepage_url = "";
+            }
+            if (!line.keyExists("image_url")){
+              line.image_url = "";
+            }
+            if (!line.keyExists("image_thumbnail_url")){
+              line.image_thumbnail_url = "";
+            }
+            if (!line.keyExists("country_code")){
+              line.country_code = "";
+            }
 
-          // AUTHORS
-          authorsArr.append(line.id);
-          authorsArr.append(line.orcid);
-          authorsArr.append(line.display_name);
-          (line.display_name_alternatives.isEmpty()) ? authorsArr.append("") : authorsArr.append(
-            line.display_name_alternatives.toJson()
-          );
-          authorsArr.append(line.works_count);
-          authorsArr.append(line.cited_by_count);
-          authorsArr.append(line.last_known_insitution.id);
-          authorsArr.append(line.works_api_url);
-          authorsArr.append(line.updated_date);
+            inputs.data.funders.append(line.id);
+            inputs.data.funders.append(line.display_name);
+            (line.alternate_titles.isEmpty()) ? inputs.data.funders.append("") : inputs.data.funders.append(
+              line.alternate_titles.toJson()
+            );
+            inputs.data.funders.append(line.country_code);
+            inputs.data.funders.append(line.description);
+            inputs.data.funders.append(line.homepage_url);
+            inputs.data.funders.append(line.image_url);
+            inputs.data.funders.append(line.image_thumbnail_url);
+            inputs.data.funders.append(line.grants_count);
+            inputs.data.funders.append(line.works_count);
+            inputs.data.funders.append(line.cited_by_count);
+            inputs.data.funders.append(line.updated_date);
 
-          fundersWriter.write(authorsArr.toList(this.csvDelimiter));
-          fundersWriter.newLine();
-          authorsArr.clear();
+            inputs.writer.funders.write(inputs.data.funders.toList(this.csvDelimiter));
+            inputs.writer.funders.newLine();
+            inputs.data.funders.clear();
+          }
 
           // AUTHORSCOUNTS
-          for (var counts in line.counts_by_year){
-            authorsCountsArr.append(line.id);
-            authorsCountsArr.append(counts.year);
-            authorsCountsArr.append(counts.works_count);
-            authorsCountsArr.append(counts.cited_by_count);
-            authorsCountsArr.append(counts.oa_works_count);
+          // if (inputs.data.keyExists("authorscountsbyyear")){
+          //   for (var counts in line.counts_by_year){
+          //     inputs.data.authorscountsbyyear.append(line.id);
+          //     inputs.data.authorscountsbyyear.append(counts.year);
+          //     inputs.data.authorscountsbyyear.append(counts.works_count);
+          //     inputs.data.authorscountsbyyear.append(counts.cited_by_count);
+          //     inputs.data.authorscountsbyyear.append(counts.oa_works_count);
 
-            authorsCountsWriter.write(authorsCountsArr.toList(this.csvDelimiter));
-            authorsCountsWriter.newLine();
-            authorsCountsArr.clear();
-          }
+          //     inputs.writer.authorscountsbyyear.write(inputs.data.authorscountsbyyear.toList(this.csvDelimiter));
+          //     inputs.writer.authorscountsbyyear.newLine();
+          //     inputs.data.authorscountsbyyear.clear();
+          //   }
+          // }
 
           // Ids
-          if (!line.ids.keyExists("orcid")){
-            line.ids.orcid = "";
-          }
-          if (!line.ids.keyExists("scopus")){
-            line.ids.scopus = "";
-          }
-          if (!line.ids.keyExists("twitter")){
-            line.ids.twitter = "";
-          }
-          if (!line.ids.keyExists("wikipedia")){
-            line.ids.wikipedia = "";
-          }
-          if (!line.ids.keyExists("mag")){
-            line.ids.mag = "";
-          }
+          // if (inputs.data.keyExists("authorsids")){
+          //   if (!line.ids.keyExists("orcid")){
+          //     line.ids.orcid = "";
+          //   }
+          //   if (!line.ids.keyExists("scopus")){
+          //     line.ids.scopus = "";
+          //   }
+          //   if (!line.ids.keyExists("twitter")){
+          //     line.ids.twitter = "";
+          //   }
+          //   if (!line.ids.keyExists("wikipedia")){
+          //     line.ids.wikipedia = "";
+          //   }
+          //   if (!line.ids.keyExists("mag")){
+          //     line.ids.mag = "";
+          //   }
 
-          authoridsArr.append(line.id);
-          authoridsArr.append(line.ids.openalex);
-          authoridsArr.append(line.ids.orcid);
-          authoridsArr.append(line.ids.scopus);
-          authoridsArr.append(line.ids.twitter);
-          authoridsArr.append(line.ids.wikipedia);
-          authoridsArr.append(line.ids.mag);
+          //   inputs.data.authorsids.append(line.id);
+          //   inputs.data.authorsids.append(line.ids.openalex);
+          //   inputs.data.authorsids.append(line.ids.orcid);
+          //   inputs.data.authorsids.append(line.ids.scopus);
+          //   inputs.data.authorsids.append(line.ids.twitter);
+          //   inputs.data.authorsids.append(line.ids.wikipedia);
+          //   inputs.data.authorsids.append(line.ids.mag);
 
-          authorsIdsWriter.write(authoridsArr.toList(this.csvDelimiter));
-          authorsIdsWriter.newLine();
-          authoridsArr.clear();
+          //   inputs.writer.authorsids.write(inputs.data.authorsids.toList(this.csvDelimiter));
+          //   inputs.writer.authorsids.newLine();
+          //   inputs.data.authorsids.clear();
+
+          
+
+
 
           flushCounter++;
           if (flushCounter == this.getwriteFlushLimit()){
             counter = counter + this.getwriteFlushLimit();
-            fundersWriter.flush();
-            authorsCountsWriter.flush();
-            authorsIdsWriter.flush();
+
+            for (var name in inputs.writer){
+              inputs.writer[name].flush();
+            }
 
             // Reset the flushCounter
             flushCounter = 0;
@@ -1229,17 +1224,21 @@ component accessors="true" extends="helper" {
       }
       catch (any e){
         outputError("Error: #e.message#");
+        writeDump(var = line, abort = false, label = "");
+        writeDump(var = e, abort = true, label = "works error");
       }
       finally{
-        fundersWriter.close();
-        authorsCountsWriter.close();
-        authorsIdsWriter.close();
         fileClose(fundersData);
-        result.success = true;
 
-        outputSuccess("Finished saving funders.csv file to #funderscsvpath#");
-        // outputSuccess("Finished saving authorscounts.csv file to #authorscountscsvpath#");
-        // outputSuccess("Finished saving authorsids.csv file to #authorsidscsvpath#");
+        for (var name in inputs.writer){
+          inputs.writer[name].close();
+        }
+
+        for (var csv in inputs.csv){
+          outputSuccess("Finished saving #csv# file to #inputs.csv[csv]#");
+        }
+
+        result.success = true;
       }
     }
     return result;
@@ -1517,7 +1516,7 @@ component accessors="true" extends="helper" {
       catch (any e){
         outputError("Error: #e.message#");
         writeDump(var = line, abort = false, label = "");
-        writeDump(var = e, abort = true, label = "works error");
+        writeDump(var = e, abort = true, label = "concepts error");
       }
       finally{
         fileClose(conceptsData);
@@ -1555,6 +1554,9 @@ component accessors="true" extends="helper" {
         break;
       case "concepts":
         result = mergeConceptsStageWithProduction(parallel);
+        break;
+      case "funders":
+        result = mergeFundersStageWithProduction(parallel);
         break;
       case "institutions":
         result = mergeInstitutionsStageWithProduction(parallel);
@@ -2437,6 +2439,59 @@ component accessors="true" extends="helper" {
         result.data.concepts_related_concepts.success = true;
         result.data.concepts_related_concepts.recordcount = qryresult.recordcount;
         outputSuccess("Sucessfully merged #result.data.concepts_related_concepts.recordcount# staging concepts_related_concepts records with production");
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    flush;
+    return result;
+  }
+
+  private any function mergeFundersStageWithProduction(parallel = 1){
+    var result = {
+      success: true,
+      data: {
+        funders: {success: false, recordcount: 0},
+        funders_counts_by_year: {success: false, recordcount: 0},
+        funders_ids: {success: false, recordcount: 0}
+      }
+    };
+
+    var activeTables = this.tables.getActiveTableNamesList("funders");
+
+    // funders
+    if (activeTables.listFind("funders")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.funders dest
+    USING #getSchema()#.stage$funders src
+    ON (dest.id = src.id)
+    WHEN MATCHED THEN
+        UPDATE SET
+            dest.display_name = src.display_name,
+            dest.alternate_titles = src.alternate_titles,
+            dest.country_code = src.country_code,
+            dest.description = src.description,
+            dest.homepage_url = src.homepage_url,
+            dest.image_url = src.image_url,
+            dest.image_thumbnail_url = src.image_thumbnail_url,
+            dest.grants_count=src.grants_count,
+            dest.works_count=src.works_count,
+            dest.cited_by_count=src.cited_by_count,
+            dest.updated_date=src.updated_date
+    WHEN NOT MATCHED THEN
+        INSERT (id, display_name, alternate_titles, country_code, description, homepage_url, image_url,
+          image_thumbnail_url,grants_count, works_count, cited_by_count, updated_date)
+        VALUES (src.id, src.display_name, src.alternate_titles, src.country_code, src.description, src.homepage_url, src.image_url,
+          src.image_thumbnail_url, src.grants_count, src.works_count, src.cited_by_count, src.updated_date)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.funders.success = true;
+        result.data.funders.recordcount = qryresult.recordcount;
+        outputSuccess("Sucessfully merged #result.data.funders.recordcount# staging funders records with production");
       }
       else{
         result.success = false;

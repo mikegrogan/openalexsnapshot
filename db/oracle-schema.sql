@@ -109,6 +109,8 @@ MODIFY PARTITION BY HASH(author_id) PARTITIONS 8;
 CREATE TABLE OPENALEX.stage$authors_ids AS
 SELECT * FROM OPENALEX.authors_ids WHERE 1 = 0;
 
+-- https://docs.google.com/document/d/1OgXSLriHO3Ekz0OYoaoP_h0sPcuvV4EqX7VgLLblKe4/edit#heading=h.mwc8rq67dbn1
+
 CREATE TABLE openalex.concepts (
     id VARCHAR2(50) primary key,
     wikidata VARCHAR2(50),
@@ -169,6 +171,62 @@ CREATE TABLE openalex.concepts_related_concepts (
 
 CREATE TABLE OPENALEX.stage$concepts_related_concepts AS
 SELECT * FROM OPENALEX.concepts_related_concepts WHERE 1 = 0;
+
+
+-- https://docs.google.com/document/d/1bDopkhuGieQ4F8gGNj7sEc8WSE8mvLZS/edit#heading=h.5w2tb5fcg77r
+
+CREATE TABLE openalex.topics (
+    id VARCHAR2(50) primary key,
+    display_name NVARCHAR2(1000),
+    description NVARCHAR2(500),
+);
+
+CREATE TABLE openalex.topics_ids (
+    topic_id VARCHAR2(50) primary key,
+    openalex VARCHAR2(50),
+    wikipedia VARCHAR2(3000),
+);
+
+CREATE TABLE openalex.funders (
+    id VARCHAR2(50) primary key,
+    display_name NVARCHAR2(1500),
+    alternate_titles NCLOB CHECK (alternate_titles IS JSON),
+    country_code VARCHAR2(50),
+    description NVARCHAR2(500),
+    homepage_url VARCHAR2(1000),
+    image_url VARCHAR2(1000),
+    image_thumbnail_url VARCHAR2(1000),
+    grants_count NUMBER,
+    works_count NUMBER,
+    cited_by_count NUMBER,
+    updated_date TIMESTAMP
+);
+
+CREATE TABLE OPENALEX.stage$funders AS
+SELECT * FROM OPENALEX.funders WHERE 1 = 0;
+
+CREATE TABLE openalex.funders_ids (
+    funder_id VARCHAR2(50) primary key,
+    openalex VARCHAR2(50),
+    ror VARCHAR2(50),
+    wikidata VARCHAR2(50),
+    crossref VARCHAR2(50),
+    doi VARCHAR2(100)
+);
+
+CREATE TABLE OPENALEX.stage$funders_ids AS
+SELECT * FROM OPENALEX.funders_ids WHERE 1 = 0;
+
+CREATE TABLE openalex.funders_counts_by_year (
+    funder_id VARCHAR2(50),
+    year NUMBER,
+    works_count NUMBER,
+    cited_by_count NUMBER,
+    primary key (funder_id,year)
+);
+
+CREATE TABLE OPENALEX.stage$funders_counts_by_year AS
+SELECT * FROM OPENALEX.funders_counts_by_year WHERE 1 = 0;
 
 CREATE TABLE openalex.institutions (
     id VARCHAR2(50) primary key,

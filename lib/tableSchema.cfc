@@ -53,6 +53,26 @@ component accessors="true" extends="helper" {
           active: true
         }
       ],
+      funders: [
+        {
+          name: "funders",
+          id: "id",
+          fields: "id,display_name,alternate_titles,country_code,description,homepage_url,image_url,image_thumbnail_url,grants_count,works_count,cited_by_count,updated_date",
+          active: true
+        },
+        {
+          name: "funders_counts_by_year",
+          id: "funder_id",
+          fields: "funder_id,year,works_count,cited_by_count",
+          active: false
+        },
+        {
+          name: "funders_ids",
+          id: "funder_id",
+          fields: "funder_id,openalex,ror,wikidata,crossref,doi",
+          active: false
+        }
+      ],
       institutions: [
         {
           name: "institutions",
