@@ -1,0 +1,20 @@
+{
+  "environment": "local",
+  "database": {
+    "local": {
+      "datasource": "oa_dsn",
+      "schema": "openalex",
+      "connectionstring": "openalex/\"localpassword\"@oraclelocalinstance"
+    },
+    "development": {
+      "datasource": "oa_dsn",
+      "schema": "openalex",
+      "connectionstring": "openalex/\"devpassword\"@oracledevinstance"
+    },
+    "production": {
+      "datasource": "oa_dsn",
+      "schema": "openalex",
+      "connectionstring": "openalex/\"prodpassword\"@oracleprodinstance"
+    }
+  }
+}
