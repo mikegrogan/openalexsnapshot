@@ -1,9 +1,9 @@
 <cfscript>
 api = new OpenAlexClient();
 api.main(
-  syncAuthors = true,
+  syncAuthors = false,
   syncConcepts = false,
-  syncFunders = false,
+  syncFunders = true,
   syncInstitutions = false,
   syncPublishers = false,
   syncSources = false,

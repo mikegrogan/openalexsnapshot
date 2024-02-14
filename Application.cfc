@@ -23,7 +23,7 @@ component {
 
   function onRequestStart(){
     // if you want to refresh the application scope w/o restarting the server
-    // onApplicationStart();
+    onApplicationStart();
   }
 
   private function getSettings(){
