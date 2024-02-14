@@ -140,7 +140,9 @@ component accessors="true" extends="helper" {
     outputh3("Delete merge records from tables");
     flush;
 
-    for (var table in this.tables.getTables()[arguments.entity]){
+    // currently won't delete ids from non active tables. think this is the 
+    // best approach just in case the table doesn't exist.
+    for (var table in this.tables.getActiveTables(arguments.entity)){
       queryExecute(
         "delete from #getSchema()#.#table.name#
         where #table.id# in (select id from #getSchema()#.stage$mergeids)",

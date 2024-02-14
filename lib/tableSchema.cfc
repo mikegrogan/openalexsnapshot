@@ -14,6 +14,12 @@ component accessors="true" extends="helper" {
           active: true
         },
         {
+          name: "authors_affiliations",
+          id: "author_id,institution_id,year",
+          fields: "author_id,institution_id,year",
+          active: true
+        },
+        {
           name: "authors_counts_by_year",
           id: "author_id",
           fields: "author_id,year,works_count,cited_by_count,oa_works_count",

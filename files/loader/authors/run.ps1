@@ -2,7 +2,7 @@
 param (
     [string]$oraclepath = (Get-Location).Path,
     [string]$environment = "local",
-    [string]$importlist = "authors,authorscountsbyyear,authorsids"
+    [string]$importlist = "authors,authorsaffiliations,authorscountsbyyear,authorsids"
 )
 
 # Call settings script

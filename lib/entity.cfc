@@ -39,7 +39,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 10){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -110,15 +110,15 @@ component accessors="true" extends="helper" {
                   var csvDelete = deleteEntityCsvDirectory(entity = arguments.entity);
 
                   if (clear.success && csvDelete.success){
-                    // logEntityImport(
-                    //   entity = arguments.entity,
-                    //   updatedate = snapshot.updateDate,
-                    //   filenumber = snapshot.filenumber,
-                    //   filename = snapshot.filename,
-                    //   fileurl = snapshot.url,
-                    //   totalfiles = snapshot.totalfiles,
-                    //   recordcount = snapshot.meta.record_count
-                    // );
+                    logEntityImport(
+                      entity = arguments.entity,
+                      updatedate = snapshot.updateDate,
+                      filenumber = snapshot.filenumber,
+                      filename = snapshot.filename,
+                      fileurl = snapshot.url,
+                      totalfiles = snapshot.totalfiles,
+                      recordcount = snapshot.meta.record_count
+                    );
                     result.success = true;
                   }
                 }
@@ -1255,6 +1255,8 @@ component accessors="true" extends="helper" {
         // loop through rows of data
         while (!fileIsEOF(authorsData)){
           line = fileReadLine(authorsData).deserializeJSON();
+          // writeDump(var=line,abort=true,label="");
+          
 
           if (inputs.data.keyExists("authors")){
             if (!line.keyExists("orcid")){
@@ -1280,6 +1282,22 @@ component accessors="true" extends="helper" {
             inputs.writer.authors.write(inputs.data.authors.toList(this.csvDelimiter));
             inputs.writer.authors.newLine();
             inputs.data.authors.clear();
+          }
+
+          // authors affiliations
+          if (inputs.data.keyExists("authorsaffiliations")){
+            if (line.keyExists("line.affiliations")) {
+              for (var affiliation in line.affiliations){              
+                for (var year in affiliation.years){
+                  inputs.data.authorsaffiliations.append(line.id);
+                  inputs.data.authorsaffiliations.append(affiliation.institution.id);
+                  inputs.data.authorsaffiliations.append(year);                
+                  inputs.writer.authorsaffiliations.write(inputs.data.authorsaffiliations.toList(this.csvDelimiter));
+                  inputs.writer.authorsaffiliations.newLine();
+                  inputs.data.authorsaffiliations.clear();
+                }
+              }
+            }
           }
 
           // AUTHORSCOUNTS
@@ -2554,6 +2572,7 @@ component accessors="true" extends="helper" {
       success: true,
       data: {
         authors: {success: false, recordcount: 0},
+        authorsaffiliations: {success: false, recordcount: 0},
         authors_counts_by_year: {success: false, recordcount: 0},
         authors_ids: {success: false, recordcount: 0}
       }
@@ -2589,6 +2608,28 @@ component accessors="true" extends="helper" {
         result.data.authors.success = true;
         result.data.authors.recordcount = qryresult.recordcount;
         outputSuccess("Sucessfully merged #result.data.authors.recordcount# staging authors records with production");
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // authors affiliations
+    if (activeTables.listFind("authorsaffiliations")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.authors_affiliations dest
+    USING #getSchema()#.stage$authors_affiliations src
+    ON (dest.author_id = src.author_id AND dest.institution_id = src.institution_id and dest.year = src.year)   
+    WHEN NOT MATCHED THEN
+        INSERT (author_id, institution_id, year)
+        VALUES (src.author_id, src.institution_id, src.year)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.authorsaffiliations.success = true;
+        result.data.authorsaffiliations.recordcount = qryresult.recordcount;
+        outputSuccess("Sucessfully merged #result.data.authorsaffiliations.recordcount# staging authorsaffiliations records with production");
       }
       else{
         result.success = false;

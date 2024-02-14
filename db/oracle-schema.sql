@@ -1,6 +1,7 @@
 -- based off of https://github.com/ourresearch/openalex-documentation-scripts/blob/main/openalex-pg-schema.sql
 -- drop statement will error if tables aren't present
 DROP TABLE openalex.authors cascade constraints;
+DROP TABLE openalex.authors_affiliations cascade constraints;
 DROP TABLE openalex.authors_counts_by_year cascade constraints;
 DROP TABLE openalex.authors_ids cascade constraints;
 DROP TABLE openalex.concepts cascade constraints;
@@ -77,6 +78,16 @@ MODIFY PARTITION BY HASH(id) PARTITIONS 8;
 
 CREATE TABLE OPENALEX.stage$authors AS
 SELECT * FROM OPENALEX.authors WHERE 1 = 0;
+
+CREATE TABLE openalex.authors_affiliations (
+    author_id VARCHAR2(50),
+    institution_id VARCHAR2(50),
+    year NUMBER,
+    primary key(author_id,institution_id,year)
+);
+
+CREATE TABLE OPENALEX.stage$authors_affiliations AS
+SELECT * FROM OPENALEX.authors_affiliations WHERE 1 = 0;
 
 CREATE TABLE openalex.authors_counts_by_year (
     author_id VARCHAR2(50),
