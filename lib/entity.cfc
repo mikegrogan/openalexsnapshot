@@ -67,6 +67,7 @@ component accessors="true" extends="helper" {
       }
       else{
         outputH2("All up to date with #arguments.entity# snapshots");
+        result.success = true;
       }
 
       for (var snapshot in filesToProcess.data){
