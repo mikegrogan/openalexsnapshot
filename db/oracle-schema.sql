@@ -394,7 +394,7 @@ SELECT * FROM OPENALEX.sources_ids WHERE 1 = 0;
 
 CREATE TABLE openalex.works (
     id VARCHAR2(50) primary key,
-    doi VARCHAR2(100),
+    doi VARCHAR2(200),
     title NVARCHAR2(1500),
     display_name NVARCHAR2(1500),
     publication_year NUMBER,
@@ -476,6 +476,7 @@ CREATE TABLE openalex.works_authorships (
     work_id VARCHAR2(50),
     author_position VARCHAR2(50),
     author_id VARCHAR2(50),
+    raw_author_name NCLOB,
     institution_id VARCHAR2(50),
     raw_affiliation_string CLOB,
     primary key (work_id,author_id)
@@ -517,7 +518,7 @@ SELECT * FROM OPENALEX.works_concepts WHERE 1 = 0;
 CREATE TABLE openalex.works_ids (
     work_id VARCHAR2(50) primary key,
     openalex VARCHAR2(50),
-    doi VARCHAR2(100),
+    doi VARCHAR2(200),
     mag NUMBER,
     pmid VARCHAR2(100),
     pmcid VARCHAR2(100)

@@ -161,40 +161,40 @@ component accessors="true" extends="helper" {
         {
           name: "works_authorships",
           id: "work_id",
-          fields: "work_id,author_position,author_id,institution_id,raw_affiliation_string",
+          fields: "work_id,author_position,author_id,raw_author_name,institution_id,raw_affiliation_string",
           active: true
         },
         {
           name: "works_best_oa_locations",
           id: "work_id",
           fields: "unique_id,work_id,source_id,landing_page_url,pdf_url,is_oa,version,license",
-          active: true
+          active: false
         },
         {
           name: "works_biblio",
           id: "work_id",
           fields: "work_id,volume,issue,first_page,last_page",
-          active: true
+          active: false
         },
-        {name: "works_concepts", id: "work_id", fields: "work_id,concept_id,score", active: true},
-        {name: "works_ids", id: "work_id", fields: "work_id,openalex,doi,mag,pmid,pmcid", active: true},
+        {name: "works_concepts", id: "work_id", fields: "work_id,concept_id,score", active: false},
+        {name: "works_ids", id: "work_id", fields: "work_id,openalex,doi,mag,pmid,pmcid", active: false},
         {
           name: "works_locations",
           id: "work_id",
           fields: "work_id,source_id,landing_page_url,pdf_url,is_oa,version,license",
-          active: true
+          active: false
         },
         {
           name: "works_mesh",
           id: "work_id",
           fields: "work_id,merge_id,descriptor_ui,descriptor_name,qualifier_ui,qualifier_name,is_major_topic",
-          active: true
+          active: false
         },
         {
           name: "works_open_access",
           id: "work_id",
           fields: "work_id,is_oa,oa_status,oa_url,any_repository_has_fulltext",
-          active: true
+          active: false
         },
         {
           name: "works_primary_locations",
@@ -202,8 +202,13 @@ component accessors="true" extends="helper" {
           fields: "work_id,source_id,landing_page_url,pdf_url,is_oa,version,license",
           active: false
         },
-        {name: "works_referenced_works", id: "work_id", fields: "work_id, referenced_work_id", active: true},
-        {name: "works_related_works", id: "work_id", fields: "work_id,related_work_id", active: true}
+        {
+          name: "works_referenced_works",
+          id: "work_id",
+          fields: "work_id, referenced_work_id",
+          active: false
+        },
+        {name: "works_related_works", id: "work_id", fields: "work_id,related_work_id", active: false}
       ]
     });
     return this;

@@ -61,9 +61,6 @@ component accessors="true" extends="lib.helper" {
   {
     var result = {success: false, data: ""};
 
-    if (arguments.syncFlags.syncauthors){
-      result.data = result.data.listAppend("authors");
-    }
     if (arguments.syncFlags.syncconcepts){
       result.data = result.data.listAppend("concepts");
     }
@@ -78,6 +75,9 @@ component accessors="true" extends="lib.helper" {
     }
     if (arguments.syncflags.syncsources){
       result.data = result.data.listappend("sources");
+    }
+    if (arguments.syncFlags.syncauthors){
+      result.data = result.data.listAppend("authors");
     }
     if (arguments.syncflags.syncworks){
       result.data = result.data.listappend("works");

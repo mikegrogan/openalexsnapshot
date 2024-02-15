@@ -2,7 +2,7 @@
 param (
     [string]$oraclepath = (Get-Location).Path,
     [string]$environment = "local",
-    [string]$importlist = "works,worksbestoalocations,worksbiblio,worksconcepts,worksids,worksmesh,worksopenaccess,worksreferencedworks,worksrelatedworks"
+    [string]$importlist = "works,worksauthorships,worksbestoalocations,worksbiblio,worksconcepts,worksids,worksmesh,worksopenaccess,worksreferencedworks,worksrelatedworks"
 )
 
 # Call settings script

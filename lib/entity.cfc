@@ -386,8 +386,8 @@ component accessors="true" extends="helper" {
             // works
             inputs.data.works.append(line.id);
             inputs.data.works.append(line.doi);
-            inputs.data.works.append(line.title.reReplaceNoCase("[\n\r]", " ", "all"));
-            inputs.data.works.append(line.display_name.reReplaceNoCase("[\n\r]", " ", "all"));
+            inputs.data.works.append(line.title.reReplaceNoCase("[\n\r\t]", " ", "all"));
+            inputs.data.works.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.works.append(line.publication_year);
             inputs.data.works.append(line.publication_date);
             inputs.data.works.append(line.type);
@@ -403,23 +403,31 @@ component accessors="true" extends="helper" {
           }
 
           // authorships
-          // for (var authorship in line.authorships){
-          //   if (!authorship.keyExists("institutions") || authorship.keyExists("institutions") && authorship.institutions.isEmpty()){
-          //     authorship.institutions = [{id: ""}];
-          //   }
-          //   if (!authorship.keyExists("raw_affiliation_string")){
-          //     authorship.raw_affiliation_string = "";
-          //   }
+          if (inputs.data.keyExists("worksauthorships")){
+            for (var authorship in line.authorships){
+              if (
+                !authorship.keyExists("institutions") || authorship.keyExists("institutions") && authorship.institutions.isEmpty()
+              ){
+                authorship.institutions = [{id: ""}];
+              }
+              if (!authorship.keyExists("raw_affiliation_string")){
+                authorship.raw_affiliation_string = "";
+              }
+              if (!authorship.keyExists("raw_author_name")){
+                authorship.raw_author_name = "";
+              }
 
-          //   worksAuthorshipsArr.append(line.id);
-          //   worksAuthorshipsArr.append(authorship.author_position);
-          //   worksAuthorshipsArr.append(authorship.author.id);
-          //   worksAuthorshipsArr.append(authorship.institutions[1].id);
-          //   worksAuthorshipsArr.append(authorship.raw_affiliation_string.reReplaceNoCase("[\n\r]", " ", "all"));
-          //   worksAuthorshipsWriter.write(worksAuthorshipsArr.toList(this.csvDelimiter));
-          //   worksAuthorshipsWriter.newLine();
-          //   worksAuthorshipsArr.clear();
-          // }
+              inputs.data.worksauthorships.append(line.id);
+              inputs.data.worksauthorships.append(authorship.author_position);
+              inputs.data.worksauthorships.append(authorship.author.id);
+              inputs.data.worksauthorships.append(authorship.raw_author_name);
+              inputs.data.worksauthorships.append(authorship.institutions[1].id);
+              inputs.data.worksauthorships.append(authorship.raw_affiliation_string.reReplaceNoCase("[\n\r]", " ", "all"));
+              inputs.writer.worksauthorships.write(inputs.data.worksauthorships.toList(this.csvDelimiter));
+              inputs.writer.worksauthorships.newLine();
+              inputs.data.worksauthorships.clear();
+            }
+          }
 
           // best locations
           if (inputs.data.keyExists("worksbestoalocations")){
@@ -825,7 +833,7 @@ component accessors="true" extends="helper" {
 
             // publishers
             inputs.data.publishers.append(line.id);
-            inputs.data.publishers.append(line.display_name);
+            inputs.data.publishers.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.publishers.append("") : inputs.data.publishers.append(
               line.alternate_titles.toJson()
             );
@@ -963,7 +971,7 @@ component accessors="true" extends="helper" {
             // insitutions
             inputs.data.institutions.append(line.id);
             inputs.data.institutions.append(line.ror);
-            inputs.data.institutions.append(line.display_name);
+            inputs.data.institutions.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.institutions.append(line.country_code);
             inputs.data.institutions.append(line.type);
             inputs.data.institutions.append(line.homepage_url);
@@ -1161,12 +1169,12 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.funders.append(line.id);
-            inputs.data.funders.append(line.display_name);
+            inputs.data.funders.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.funders.append("") : inputs.data.funders.append(
               line.alternate_titles.toJson()
             );
             inputs.data.funders.append(line.country_code);
-            inputs.data.funders.append(line.description);
+            inputs.data.funders.append(line.description.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.funders.append(line.homepage_url);
             inputs.data.funders.append(line.image_url);
             inputs.data.funders.append(line.image_thumbnail_url);
@@ -1290,7 +1298,7 @@ component accessors="true" extends="helper" {
             // AUTHORS
             inputs.data.authors.append(line.id);
             inputs.data.authors.append(line.orcid);
-            inputs.data.authors.append(line.display_name);
+            inputs.data.authors.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.display_name_alternatives.isEmpty()) ? inputs.data.authors.append("") : inputs.data.authors.append(
               line.display_name_alternatives.toJson()
             );
@@ -1437,9 +1445,9 @@ component accessors="true" extends="helper" {
             // Concepts
             inputs.data.concepts.append(line.id);
             inputs.data.concepts.append(line.wikidata);
-            inputs.data.concepts.append(line.display_name);
+            inputs.data.concepts.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.concepts.append(line.level);
-            inputs.data.concepts.append(line.description);
+            inputs.data.concepts.append(line.description.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.concepts.append(line.works_count);
             inputs.data.concepts.append(line.cited_by_count);
             inputs.data.concepts.append(line.image_url);
@@ -1626,7 +1634,7 @@ component accessors="true" extends="helper" {
       }
     };
 
-    var activeTables = this.tables.getActiveTableNamesList("sources");
+    var activeTables = this.tables.getActiveTableNamesList("works");
 
     // works
     if (activeTables.listFind("works")){
@@ -1667,27 +1675,45 @@ component accessors="true" extends="helper" {
     }
 
     // authorships
-    // queryExecute(
-    //   "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.works_authorships dest
-    // USING #getSchema()#.stage$works_authorships src
-    // ON (dest.work_id = src.work_id AND dest.author_id = src.author_id)
-    // WHEN MATCHED THEN
-    //     UPDATE SET
-    //         dest.author_position = src.author_position,
-    //         dest.raw_affiliation_string = src.raw_affiliation_string
-    // WHEN NOT MATCHED THEN
-    //     INSERT /*+ IGNORE_DUP_KEY */ (work_id, author_position, author_id, institution_id, raw_affiliation_string)
-    //     VALUES (src.work_id, src.author_position, src.author_id, src.institution_id, src.raw_affiliation_string)",
-    //   {},
-    //   {datasource: getDatasource(), result: "qryresult"}
-    // );
-    // if (isStruct(qryresult)){
-    //   result.data.works_authorships.success = true;
-    //   result.data.works_authorships.recordcount = qryresult.recordcount;
-    // }
-    // else{
-    //   result.success = false;
-    // }
+    if (activeTables.listFind("worksauthorships")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.works_authorships dest
+    USING (
+      SELECT work_id, author_id, author_position, raw_author_name, institution_id, raw_affiliation_string
+        FROM (
+            SELECT 
+                work_id, 
+                author_id, 
+                author_position, 
+                raw_author_name, 
+                institution_id, 
+                raw_affiliation_string,
+                ROW_NUMBER() OVER (PARTITION BY work_id, author_id ORDER BY work_id) AS rn
+            FROM #getSchema()#.stage$works_authorships
+        ) 
+        WHERE rn = 1
+    ) src
+    ON (dest.work_id = src.work_id AND dest.author_id = src.author_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+            dest.author_position = src.author_position,
+            dest.raw_author_name = src.raw_author_name,
+            dest.raw_affiliation_string = src.raw_affiliation_string
+    WHEN NOT MATCHED THEN
+        INSERT (work_id, author_position, author_id, raw_author_name, institution_id, raw_affiliation_string)
+        VALUES (src.work_id, src.author_position, src.author_id, src.raw_author_name, src.institution_id, src.raw_affiliation_string)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.works_authorships.success = true;
+        result.data.works_authorships.recordcount = qryresult.recordcount;
+        outputSuccess("Sucessfully merged #result.data.works_authorships.recordcount# staging works_authorships records with production");
+      }
+      else{
+        result.success = false;
+      }
+    }
 
     // works_best_oa_locations
     if (activeTables.listFind("worksbestoalocations")){
@@ -1930,7 +1956,6 @@ component accessors="true" extends="helper" {
       }
     }
 
-    // outputSuccess("Sucessfully merged #result.data.works_authorships.recordcount# staging works_authorships records with production");
     // outputSuccess("Sucessfully merged #result.data.works_primary_locations.recordcount# staging works_primary_locations records with production");
 
     flush;
