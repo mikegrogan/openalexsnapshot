@@ -17,21 +17,32 @@ component accessors="true" extends="helper" {
   }
 
   public any function handleEntities(entityList){
+    var result = {success: false};
+
     for (var entity in arguments.entityList){
       outputH1("<div id=""#entity#"">Syncing #entity#</div>");
       flush;
 
       outputH2("Working on #entity# Inserts/Updates");
       var manifestResult = this.s3.downloadEntityManifestFromOA(entity = entity);
-      var processEntityResult = processEntitySnapshots(entity = entity);
+      if (!manifestResult.success){
+        break;
+      }
+      else{
+        var processEntityResult = processEntitySnapshots(entity = entity);
 
-      if (processEntityResult.success){
-        outputH2("Working on #entity# Deletions");
-        var processMergeResult = this.merge.processEntityMergedIds(entity = entity);
+        if (!processEntityResult.success){
+          break;
+        }
+        else{
+          outputH2("Working on #entity# Deletions");
+          var processMergeResult = this.merge.processEntityMergedIds(entity = entity);
+          result.success = true;
+        }
       }
     }
 
-    return true;
+    return result;
   }
 
   /**
