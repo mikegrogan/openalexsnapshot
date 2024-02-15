@@ -32,3 +32,16 @@ Write-Host "Environment: $environment"
 Write-Host "Datasource: $datasource"
 Write-Host "Schema: $schema"
 Write-Host "ConnectionString: $connectionstring"
+
+# Run Oracle Import
+foreach ($item in $importlistArr) {
+    # Clean up old logs
+    Remove-Item -Path "logs\$item.*" -Force -ErrorAction SilentlyContinue
+
+    # Oracle Import
+    sqlldr userid=$connectionstring direct=true skip=1 errors=0 skip_index_maintenance=true control="$item.ctl" log="logs\$item.log"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[Error]: SQL*Loader encountered errors. Please check the log file for details."
+    }
+}

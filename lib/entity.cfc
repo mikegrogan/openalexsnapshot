@@ -10,7 +10,6 @@ component accessors="true" extends="helper" {
     this.setwriteFlushLimit(500);
     this.charset = createObject("java", "java.nio.charset.Charset").forName("UTF-8");
     this.s3 = new lib.s3();
-    // this.setschema(application.database.schema);
     this.tables = new tableSchema();
     this.merge = new lib.merge();
 
@@ -26,8 +25,10 @@ component accessors="true" extends="helper" {
       var manifestResult = this.s3.downloadEntityManifestFromOA(entity = entity);
       var processEntityResult = processEntitySnapshots(entity = entity);
 
-      outputH2("Working on #entity# Deletions");
-      var processMergeResult = this.merge.processEntityMergedIds(entity = entity);
+      if (processEntityResult.success) {
+        outputH2("Working on #entity# Deletions");
+        var processMergeResult = this.merge.processEntityMergedIds(entity = entity);        
+      }
     }
 
     return true;
@@ -39,7 +40,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit =1){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -96,7 +97,10 @@ component accessors="true" extends="helper" {
             var processed = processEntityData(entity = arguments.entity, snapshotfile = unCompressedFile);
             if (processed.success){
               var imported = importDataToStaging(entity = arguments.entity);
-              if (imported){
+              if (!imported){
+                outputError("There was an error during the database import. Script has been halted. Please review the \files\loader\#arguments.entity#\logs folder for more details");
+              }
+              else{
                 var merged = mergeEntityStageWithProduction(entity = arguments.entity);
                 if (merged.success){
                   deleteFile(unCompressedFile.filepath, true);
@@ -146,7 +150,7 @@ component accessors="true" extends="helper" {
 
     cfexecute(
       name = "C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe",
-      arguments = "-File #application.localpath#loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" ",
+      arguments = "-File #application.localpath#loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" 2>&1",
       variable = "runoutput",
       errorVariable = "err",
       timeout = "1000"
@@ -157,9 +161,15 @@ component accessors="true" extends="helper" {
       outputError(err);
     }
     else{
-      outputSuccess("Sucessfully imported #arguments.entity# staging data");
-      // breaking up the output
-      outputSuccess(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
+      if (runoutput.findNoCase("[Error]")) {
+        result = false;
+        outputError(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
+      }
+      else{
+        outputSuccess("Sucessfully imported #arguments.entity# staging data");
+        // breaking up the output
+        outputSuccess(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
+      }
       flush;
     }
 
@@ -803,6 +813,15 @@ component accessors="true" extends="helper" {
             if (!line.keyExists("parent_publisher")){
               line.parent_publisher.id = "";
             }
+            if (!line.keyExists("homepage_url")){
+              line.homepage_url = "";
+            }
+            if (!line.keyExists("image_url")){
+              line.image_url = "";
+            }
+            if (!line.keyExists("image_thumbnail_url")){
+              line.image_thumbnail_url = "";
+            }
 
             // publishers
             inputs.data.publishers.append(line.id);
@@ -815,6 +834,9 @@ component accessors="true" extends="helper" {
             );
             inputs.data.publishers.append(line.hierarchy_level);
             inputs.data.publishers.append(line.parent_publisher.id);
+            inputs.data.publishers.append(line.homepage_url);
+            inputs.data.publishers.append(line.image_url);
+            inputs.data.publishers.append(line.image_thumbnail_url);
             inputs.data.publishers.append(line.works_count);
             inputs.data.publishers.append(line.cited_by_count);
             inputs.data.publishers.append(line.sources_api_url);
@@ -2051,15 +2073,18 @@ component accessors="true" extends="helper" {
             dest.country_codes = src.country_codes,
             dest.hierarchy_level=src.hierarchy_level,
             dest.parent_publisher=src.parent_publisher,
+            dest.homepage_url=src.homepage_url,
+            dest.image_url=src.image_url,
+            dest.image_thumbnail_url=src.image_thumbnail_url,
             dest.works_count=src.works_count,
             dest.cited_by_count=src.cited_by_count,
             dest.sources_api_url=src.sources_api_url,
             dest.updated_date=src.updated_date
     WHEN NOT MATCHED THEN
-        INSERT (id, display_name, alternate_titles, country_codes, hierarchy_level, parent_publisher, works_count, 
-        cited_by_count, sources_api_url, updated_date)
+        INSERT (id, display_name, alternate_titles, country_codes, hierarchy_level, parent_publisher, homepage_url,
+        image_url,image_thumbnail_url,works_count, cited_by_count, sources_api_url, updated_date)
         VALUES (src.id, src.display_name, src.alternate_titles, src.country_codes, src.hierarchy_level, src.parent_publisher, 
-        src.works_count, src.cited_by_count, src.sources_api_url, src.updated_date)",
+        src.homepage_url,src.image_url,src.image_thumbnail_url,src.works_count, src.cited_by_count, src.sources_api_url, src.updated_date)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
