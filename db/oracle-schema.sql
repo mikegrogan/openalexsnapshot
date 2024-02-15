@@ -222,7 +222,7 @@ CREATE TABLE openalex.funders_ids (
     ror VARCHAR2(50),
     wikidata VARCHAR2(50),
     crossref VARCHAR2(50),
-    doi VARCHAR2(100)
+    doi VARCHAR2(200)
 );
 
 CREATE TABLE OPENALEX.stage$funders_ids AS
