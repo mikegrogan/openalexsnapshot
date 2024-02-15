@@ -10,7 +10,7 @@ Fields terminated by '\t' trailing nullcols
   OPENALEX,
   ROR,
   GRID,
-  WIKIPEDIA CHAR(1000),
+  WIKIPEDIA CHAR(3000),
   WIKIDATA,
   MAG
 )

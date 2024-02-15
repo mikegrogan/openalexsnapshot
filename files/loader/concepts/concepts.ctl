@@ -8,7 +8,7 @@ Fields terminated by '\t' trailing nullcols
 (
   ID,
   WIKIDATA,
-  DISPLAY_NAME CHAR(500),
+  DISPLAY_NAME CHAR(1000),
   CONCEPT_LEVEL,
   DESCRIPTION CHAR(500),
   WORKS_COUNT,

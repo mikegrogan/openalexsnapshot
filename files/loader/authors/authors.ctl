@@ -8,7 +8,7 @@ Fields terminated by '\t' trailing nullcols
 (
   ID,
   ORCID,
-  DISPLAY_NAME,
+  DISPLAY_NAME CHAR(1000),
   DISPLAY_NAME_ALTERNATIVES CHAR(4000),
   WORKS_COUNT,
   CITED_BY_COUNT,

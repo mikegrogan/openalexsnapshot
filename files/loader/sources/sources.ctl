@@ -16,6 +16,6 @@ Fields terminated by '\t' trailing nullcols
   IS_OA,
   IS_IN_DOAJ,
   HOMEPAGE_URL CHAR(1000),
-  WORKS_API_URL,
+  WORKS_API_URL CHAR(1000),
   UPDATED_DATE TIMESTAMP 'YYYY-MM-DD"T"HH24:MI:SS.FF'
 )

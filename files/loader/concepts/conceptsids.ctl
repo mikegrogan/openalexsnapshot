@@ -9,7 +9,7 @@ Fields terminated by '\t' trailing nullcols
   CONCEPT_ID,
   OPENALEX,
   WIKIDATA,
-  WIKIPEDIA,
+  WIKIPEDIA CHAR(3000),
   UMLS_AUI CHAR(4000),
   UMLS_CUI CHAR(4000),
   MAG
