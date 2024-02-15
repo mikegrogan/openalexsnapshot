@@ -51,7 +51,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
+  private any function processEntitySnapshots(required entity, snapshotLimit){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -110,6 +110,7 @@ component accessors="true" extends="helper" {
               var imported = importDataToStaging(entity = arguments.entity);
               if (!imported){
                 outputError("There was an error during the database import. Script has been halted. Please review the \files\loader\#arguments.entity#\logs folder for more details");
+                break;
               }
               else{
                 var merged = mergeEntityStageWithProduction(entity = arguments.entity);
@@ -1678,7 +1679,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works.success = true;
         result.data.works.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works.recordcount# staging works records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works.recordcount# staging works records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1719,7 +1721,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_authorships.success = true;
         result.data.works_authorships.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_authorships.recordcount# staging works_authorships records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_authorships.recordcount# staging works_authorships records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1748,7 +1751,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_best_oa_locations.success = true;
         result.data.works_best_oa_locations.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_best_oa_locations.recordcount# staging works_best_oa_locations records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_best_oa_locations.recordcount# staging works_best_oa_locations records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1776,7 +1780,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_biblio.success = true;
         result.data.works_biblio.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_biblio.recordcount# staging works_biblio records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_biblio.recordcount# staging works_biblio records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1801,7 +1806,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_concepts.success = true;
         result.data.works_concepts.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_concepts.recordcount# staging works_concepts records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_concepts.recordcount# staging works_concepts records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1830,7 +1836,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_ids.success = true;
         result.data.works_ids.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_ids.recordcount# staging works_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_ids.recordcount# staging works_ids records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1858,7 +1865,8 @@ component accessors="true" extends="helper" {
     // if (isStruct(qryresult)){
     //   result.data.works_locations.success = true;
     //   result.data.works_locations.recordcount = qryresult.recordcount;
-    // outputSuccess("Sucessfully merged #result.data.works_location.recordcount# staging works_location records with production");
+    // outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_location.recordcount# staging works_location records with production");
+
     // }
     // else{
     //   result.success = false;
@@ -1886,7 +1894,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_mesh.success = true;
         result.data.works_mesh.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_mesh.recordcount# staging works_mesh records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_mesh.recordcount# staging works_mesh records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1914,7 +1923,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_open_access.success = true;
         result.data.works_open_access.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_open_access.recordcount# staging works_open_access records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_open_access.recordcount# staging works_open_access records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1938,7 +1948,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_referenced_works.success = true;
         result.data.works_referenced_works.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_referenced_works.recordcount# staging works_referenced_works records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_referenced_works.recordcount# staging works_referenced_works records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -1960,16 +1971,14 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_related_works.success = true;
         result.data.works_related_works.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.works_related_works.recordcount# staging works_related_works records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_related_works.recordcount# staging works_related_works records with production");
+        flush;
       }
       else{
         result.success = false;
       }
     }
 
-    // outputSuccess("Sucessfully merged #result.data.works_primary_locations.recordcount# staging works_primary_locations records with production");
-
-    flush;
     return result;
   }
 
@@ -2015,7 +2024,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.sources.success = true;
         result.data.sources.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.sources.recordcount# staging sources records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources.recordcount# staging sources records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2042,7 +2052,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.sources_counts_by_year.success = true;
         result.data.sources_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.sources_counts_by_year.recordcount# staging sources_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources_counts_by_year.recordcount# staging sources_counts_by_year records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2072,14 +2083,14 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.sources_ids.success = true;
         result.data.sources_ids.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.sources_ids.recordcount# staging sources_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources_ids.recordcount# staging sources_ids records with production");
+        flush;
       }
       else{
         result.success = false;
       }
     }
 
-    flush;
     return result;
   }
 
@@ -2126,7 +2137,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.publishers.success = true;
         result.data.publishers.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.publishers.recordcount# staging publishers records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers.recordcount# staging publishers records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2153,7 +2165,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.publishers_counts_by_year.success = true;
         result.data.publishers_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.publishers_counts_by_year.recordcount# staging publishers_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers_counts_by_year.recordcount# staging publishers_counts_by_year records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2180,14 +2193,14 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.publishers_ids.success = true;
         result.data.publishers_ids.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.publishers_ids.recordcount# staging publishers_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers_ids.recordcount# staging publishers_ids records with production");
+        flush;
       }
       else{
         result.success = false;
       }
     }
 
-    flush;
     return result;
   }
 
@@ -2237,7 +2250,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.institutions.success = true;
         result.data.institutions.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.institutions.recordcount# staging institutions records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions.recordcount# staging institutions records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2262,7 +2276,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.institutions_associated_institutions.success = true;
         result.data.institutions_associated_institutions.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.institutions_associated_institutions.recordcount# staging institutions_associated_institutions records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_associated_institutions.recordcount# staging institutions_associated_institutions records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2289,7 +2304,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.institutions_counts_by_year.success = true;
         result.data.institutions_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.institutions_counts_by_year.recordcount# staging institutions_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_counts_by_year.recordcount# staging institutions_counts_by_year records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2320,7 +2336,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.institutions_geo.success = true;
         result.data.institutions_geo.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.institutions_geo.recordcount# staging institutions_geo records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_geo.recordcount# staging institutions_geo records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2350,14 +2367,14 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.institutions_ids.success = true;
         result.data.institutions_ids.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.institutions_ids.recordcount# staging institutions_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_ids.recordcount# staging institutions_ids records with production");
+        flush;
       }
       else{
         result.success = false;
       }
     }
 
-    flush;
     return result;
   }
 
@@ -2404,7 +2421,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts.success = true;
         result.data.concepts.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.concepts.recordcount# staging concepts records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts.recordcount# staging concepts records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2426,7 +2444,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_ancestors.success = true;
         result.data.concepts_ancestors.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.concepts_ancestors.recordcount# staging concepts_ancestors records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_ancestors.recordcount# staging concepts_ancestors records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2453,7 +2472,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_counts_by_year.success = true;
         result.data.concepts_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.concepts_counts_by_year.recordcount# staging concepts_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_counts_by_year.recordcount# staging concepts_counts_by_year records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2483,7 +2503,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_ids.success = true;
         result.data.concepts_ids.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.concepts_ids.recordcount# staging concepts_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_ids.recordcount# staging concepts_ids records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2508,14 +2529,14 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_related_concepts.success = true;
         result.data.concepts_related_concepts.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.concepts_related_concepts.recordcount# staging concepts_related_concepts records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_related_concepts.recordcount# staging concepts_related_concepts records with production");
+        flush;
       }
       else{
         result.success = false;
       }
     }
 
-    flush;
     return result;
   }
 
@@ -2561,7 +2582,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.funders.success = true;
         result.data.funders.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.funders.recordcount# staging funders records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders.recordcount# staging funders records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2587,7 +2609,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.funders_counts_by_year.success = true;
         result.data.funders_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.funders_counts_by_year.recordcount# staging funders_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders_counts_by_year.recordcount# staging funders_counts_by_year records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2616,14 +2639,14 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.funders_ids.success = true;
         result.data.funders_ids.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.funders_ids.recordcount# staging funders_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders_ids.recordcount# staging funders_ids records with production");
+        flush;
       }
       else{
         result.success = false;
       }
     }
 
-    flush;
     return result;
   }
 
@@ -2667,7 +2690,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authors.success = true;
         result.data.authors.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.authors.recordcount# staging authors records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors.recordcount# staging authors records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2689,7 +2713,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authorsaffiliations.success = true;
         result.data.authorsaffiliations.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.authorsaffiliations.recordcount# staging authorsaffiliations records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authorsaffiliations.recordcount# staging authorsaffiliations records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2716,7 +2741,8 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authors_counts_by_year.success = true;
         result.data.authors_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.authors_counts_by_year.recordcount# staging authors_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors_counts_by_year.recordcount# staging authors_counts_by_year records with production");
+        flush;
       }
       else{
         result.success = false;
@@ -2746,14 +2772,14 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authors_ids.success = true;
         result.data.authors_ids.recordcount = qryresult.recordcount;
-        outputSuccess("Sucessfully merged #result.data.authors_ids.recordcount# staging authors_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors_ids.recordcount# staging authors_ids records with production");
+        flush;
       }
       else{
         result.success = false;
       }
     }
 
-    flush;
     return result;
   }
 
