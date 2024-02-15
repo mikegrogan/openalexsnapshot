@@ -25,9 +25,9 @@ component accessors="true" extends="helper" {
       var manifestResult = this.s3.downloadEntityManifestFromOA(entity = entity);
       var processEntityResult = processEntitySnapshots(entity = entity);
 
-      if (processEntityResult.success) {
+      if (processEntityResult.success){
         outputH2("Working on #entity# Deletions");
-        var processMergeResult = this.merge.processEntityMergedIds(entity = entity);        
+        var processMergeResult = this.merge.processEntityMergedIds(entity = entity);
       }
     }
 
@@ -40,7 +40,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit =1){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -161,7 +161,7 @@ component accessors="true" extends="helper" {
       outputError(err);
     }
     else{
-      if (runoutput.findNoCase("[Error]")) {
+      if (runoutput.findNoCase("[Error]")){
         result = false;
         outputError(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
       }
@@ -1128,12 +1128,11 @@ component accessors="true" extends="helper" {
     var javaSystem = createObject("java", "java.lang.System");
 
     if (arguments.snapshotfile.success){
-      
       try{
         var inputs = setupEntityCSVFiles("funders");
         // Create a file object
         var fundersData = fileOpen(arguments.snapshotfile.filepath, "read");
-        
+
         var flushCounter = 0;
         var counter = 0;
 
@@ -1195,7 +1194,7 @@ component accessors="true" extends="helper" {
             }
           }
 
-          //Ids
+          // Ids
           if (inputs.data.keyExists("fundersids")){
             if (!line.ids.keyExists("ror")){
               line.ids.ror = "";
@@ -1278,7 +1277,7 @@ component accessors="true" extends="helper" {
         while (!fileIsEOF(authorsData)){
           line = fileReadLine(authorsData).deserializeJSON();
           // writeDump(var=line,abort=true,label="");
-          
+
 
           if (inputs.data.keyExists("authors")){
             if (!line.keyExists("orcid")){
@@ -1308,12 +1307,12 @@ component accessors="true" extends="helper" {
 
           // authors affiliations
           if (inputs.data.keyExists("authorsaffiliations")){
-            if (line.keyExists("line.affiliations")) {
-              for (var affiliation in line.affiliations){              
+            if (line.keyExists("affiliations")){
+              for (var affiliation in line.affiliations){
                 for (var year in affiliation.years){
                   inputs.data.authorsaffiliations.append(line.id);
                   inputs.data.authorsaffiliations.append(affiliation.institution.id);
-                  inputs.data.authorsaffiliations.append(year);                
+                  inputs.data.authorsaffiliations.append(year);
                   inputs.writer.authorsaffiliations.write(inputs.data.authorsaffiliations.toList(this.csvDelimiter));
                   inputs.writer.authorsaffiliations.newLine();
                   inputs.data.authorsaffiliations.clear();
