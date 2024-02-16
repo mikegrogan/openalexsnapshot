@@ -710,14 +710,9 @@ component accessors="true" extends="helper" {
             // publishers
             inputs.data.sources.append(line.id);
             inputs.data.sources.append(line.issn_l);
-            (line.issn.isEmpty()) ? inputs.data.sources.append("") : inputs.data.sources
-              .slice(1, 100)
-              .append(
-                line.issn
-                  .slice(1, 100)
-                  .slice(1, 100)
-                  .toJson()
-              );
+            (line.issn.isEmpty()) ? inputs.data.sources.append("") : inputs.data.sources.append(
+              line.issn.slice(1, min(line.issn.len(), 100)).toJson()
+            );
             inputs.data.sources.append(line.display_name); // todo: test
             inputs.data.sources.append(line.host_organization);
             inputs.data.sources.append(line.works_count);
@@ -772,7 +767,7 @@ component accessors="true" extends="helper" {
             inputs.data.sourcesids.append(line.ids.openalex);
             inputs.data.sourcesids.append(line.ids.issn_l);
             (line.issn.isEmpty()) ? inputs.data.sourcesids.append("") : inputs.data.sourcesids.append(
-              line.issn.slice(1, 100).toJson()
+              line.issn.slice(1, min(line.issn.len(), 100)).toJson()
             );
             inputs.data.sourcesids.append(line.ids.mag);
             inputs.data.sourcesids.append(line.ids.wikidata);
@@ -857,10 +852,10 @@ component accessors="true" extends="helper" {
             inputs.data.publishers.append(line.id);
             inputs.data.publishers.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.publishers.append("") : inputs.data.publishers.append(
-              line.alternate_titles.slice(1, 100).toJson()
+              line.alternate_titles.slice(1, min(line.alternate_titles.len(), 100)).toJson()
             );
             (line.country_codes.isEmpty()) ? inputs.data.publishers.append("") : inputs.data.publishers.append(
-              line.country_codes.slice(1, 100).toJson()
+              line.country_codes.slice(1, min(line.country_codes.len(), 100)).toJson()
             );
             inputs.data.publishers.append(line.hierarchy_level);
             inputs.data.publishers.append(line.parent_publisher.id);
@@ -1000,10 +995,10 @@ component accessors="true" extends="helper" {
             inputs.data.institutions.append(line.image_url);
             inputs.data.institutions.append(line.image_thumbnail_url);
             (line.display_name_acronyms.isEmpty()) ? inputs.data.institutions.append("") : inputs.data.institutions.append(
-              line.slice(1, 100).display_name_acronyms.toJson()
+              line.display_name_acronyms.splice(1, min(line.display_name_acronyms.len(), 100)).toJson()
             );
             (line.display_name_alternatives.isEmpty()) ? inputs.data.institutions.append("") : inputs.data.institutions.append(
-              line.display_name_alternatives.slice(1, 100).toJson()
+              line.display_name_alternatives.slice(1, min(line.display_name_alternatives.len(), 100)).toJson()
             );
             inputs.data.institutions.append(line.works_count);
             inputs.data.institutions.append(line.cited_by_count);
@@ -1193,7 +1188,7 @@ component accessors="true" extends="helper" {
             inputs.data.funders.append(line.id);
             inputs.data.funders.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.funders.append("") : inputs.data.funders.append(
-              line.alternate_titles.slice(1, 100).toJson()
+              line.alternate_titles.slice(1, min(line.alternate_titles.len(), 100)).toJson()
             );
             inputs.data.funders.append(line.country_code);
             inputs.data.funders.append(line.description.reReplaceNoCase("[\n\r\t]", " ", "all"));
@@ -1322,7 +1317,7 @@ component accessors="true" extends="helper" {
             inputs.data.authors.append(line.orcid);
             inputs.data.authors.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.display_name_alternatives.isEmpty()) ? inputs.data.authors.append("") : inputs.data.authors.append(
-              line.display_name_alternatives.slice(1, 100).toJson()
+              line.display_name_alternatives.slice(1, min(line.display_name_alternatives.len(), 100)).toJson()
             );
             inputs.data.authors.append(line.works_count);
             inputs.data.authors.append(line.cited_by_count);
@@ -1535,10 +1530,10 @@ component accessors="true" extends="helper" {
             inputs.data.conceptsids.append(line.ids.wikidata);
             inputs.data.conceptsids.append(line.ids.wikipedia);
             (line.ids.umls_aui.isEmpty()) ? inputs.data.conceptsids.append("") : inputs.data.conceptsids.append(
-              line.ids.umls_aui.slice(1, 100).toJson()
+              line.ids.umls_aui.slice(1, min(line.ids.umls_aui.len(), 100)).toJson()
             );
             (line.ids.umls_cui.isEmpty()) ? inputs.data.conceptsids.append("") : inputs.data.conceptsids.append(
-              line.ids.umls_cui.slice(1, 100).toJson()
+              line.ids.umls_cui.slice(1, min(line.ids.umls_cui.len(), 100)).toJson()
             );
             inputs.data.conceptsids.append(line.ids.mag);
 
