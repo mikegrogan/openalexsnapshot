@@ -51,7 +51,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -710,7 +710,14 @@ component accessors="true" extends="helper" {
             // publishers
             inputs.data.sources.append(line.id);
             inputs.data.sources.append(line.issn_l);
-            (line.issn.isEmpty()) ? inputs.data.sources.append("") : inputs.data.sources.append(line.issn.toJson());
+            (line.issn.isEmpty()) ? inputs.data.sources.append("") : inputs.data.sources
+              .slice(1, 100)
+              .append(
+                line.issn
+                  .slice(1, 100)
+                  .slice(1, 100)
+                  .toJson()
+              );
             inputs.data.sources.append(line.display_name); // todo: test
             inputs.data.sources.append(line.host_organization);
             inputs.data.sources.append(line.works_count);
@@ -764,7 +771,9 @@ component accessors="true" extends="helper" {
             inputs.data.sourcesids.append(line.id);
             inputs.data.sourcesids.append(line.ids.openalex);
             inputs.data.sourcesids.append(line.ids.issn_l);
-            (line.issn.isEmpty()) ? inputs.data.sourcesids.append("") : inputs.data.sourcesids.append(line.issn.toJson());
+            (line.issn.isEmpty()) ? inputs.data.sourcesids.append("") : inputs.data.sourcesids.append(
+              line.issn.slice(1, 100).toJson()
+            );
             inputs.data.sourcesids.append(line.ids.mag);
             inputs.data.sourcesids.append(line.ids.wikidata);
             inputs.data.sourcesids.append(line.ids.fatcat);
@@ -848,10 +857,10 @@ component accessors="true" extends="helper" {
             inputs.data.publishers.append(line.id);
             inputs.data.publishers.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.publishers.append("") : inputs.data.publishers.append(
-              line.alternate_titles.toJson()
+              line.alternate_titles.slice(1, 100).toJson()
             );
             (line.country_codes.isEmpty()) ? inputs.data.publishers.append("") : inputs.data.publishers.append(
-              line.country_codes.toJson()
+              line.country_codes.slice(1, 100).toJson()
             );
             inputs.data.publishers.append(line.hierarchy_level);
             inputs.data.publishers.append(line.parent_publisher.id);
@@ -991,10 +1000,10 @@ component accessors="true" extends="helper" {
             inputs.data.institutions.append(line.image_url);
             inputs.data.institutions.append(line.image_thumbnail_url);
             (line.display_name_acronyms.isEmpty()) ? inputs.data.institutions.append("") : inputs.data.institutions.append(
-              line.display_name_acronyms.toJson()
+              line.slice(1, 100).display_name_acronyms.toJson()
             );
             (line.display_name_alternatives.isEmpty()) ? inputs.data.institutions.append("") : inputs.data.institutions.append(
-              line.display_name_alternatives.toJson()
+              line.display_name_alternatives.slice(1, 100).toJson()
             );
             inputs.data.institutions.append(line.works_count);
             inputs.data.institutions.append(line.cited_by_count);
@@ -1184,7 +1193,7 @@ component accessors="true" extends="helper" {
             inputs.data.funders.append(line.id);
             inputs.data.funders.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.funders.append("") : inputs.data.funders.append(
-              line.alternate_titles.toJson()
+              line.alternate_titles.slice(1, 100).toJson()
             );
             inputs.data.funders.append(line.country_code);
             inputs.data.funders.append(line.description.reReplaceNoCase("[\n\r\t]", " ", "all"));
@@ -1313,7 +1322,7 @@ component accessors="true" extends="helper" {
             inputs.data.authors.append(line.orcid);
             inputs.data.authors.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.display_name_alternatives.isEmpty()) ? inputs.data.authors.append("") : inputs.data.authors.append(
-              line.display_name_alternatives.toJson()
+              line.display_name_alternatives.slice(1, 100).toJson()
             );
             inputs.data.authors.append(line.works_count);
             inputs.data.authors.append(line.cited_by_count);
@@ -1526,10 +1535,10 @@ component accessors="true" extends="helper" {
             inputs.data.conceptsids.append(line.ids.wikidata);
             inputs.data.conceptsids.append(line.ids.wikipedia);
             (line.ids.umls_aui.isEmpty()) ? inputs.data.conceptsids.append("") : inputs.data.conceptsids.append(
-              line.ids.umls_aui.toJson()
+              line.ids.umls_aui.slice(1, 100).toJson()
             );
             (line.ids.umls_cui.isEmpty()) ? inputs.data.conceptsids.append("") : inputs.data.conceptsids.append(
-              line.ids.umls_cui.toJson()
+              line.ids.umls_cui.slice(1, 100).toJson()
             );
             inputs.data.conceptsids.append(line.ids.mag);
 
