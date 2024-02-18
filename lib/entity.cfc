@@ -51,7 +51,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
+  private any function processEntitySnapshots(required entity, snapshotLimit){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -433,9 +433,9 @@ component accessors="true" extends="helper" {
               inputs.data.worksauthorships.append(line.id);
               inputs.data.worksauthorships.append(authorship.author_position);
               inputs.data.worksauthorships.append(authorship.author.id);
-              inputs.data.worksauthorships.append(authorship.raw_author_name);
+              inputs.data.worksauthorships.append(authorship.raw_author_name).reReplaceNoCase("[\n\r\t]", " ", "all"));
               inputs.data.worksauthorships.append(authorship.institutions[1].id);
-              inputs.data.worksauthorships.append(authorship.raw_affiliation_string.reReplaceNoCase("[\n\r]", " ", "all"));
+              inputs.data.worksauthorships.append(authorship.raw_affiliation_string.reReplaceNoCase("[\n\r\t]", " ", "all"));
               inputs.writer.worksauthorships.write(inputs.data.worksauthorships.toList(this.csvDelimiter));
               inputs.writer.worksauthorships.newLine();
               inputs.data.worksauthorships.clear();
