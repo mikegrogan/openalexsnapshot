@@ -222,7 +222,7 @@ CREATE TABLE openalex.funders_ids (
     ror VARCHAR2(50),
     wikidata VARCHAR2(50),
     crossref VARCHAR2(50),
-    doi VARCHAR2(200)
+    doi VARCHAR2(300)
 );
 
 CREATE TABLE OPENALEX.stage$funders_ids AS
@@ -394,7 +394,7 @@ SELECT * FROM OPENALEX.sources_ids WHERE 1 = 0;
 
 CREATE TABLE openalex.works (
     id VARCHAR2(50) primary key,
-    doi VARCHAR2(200),
+    doi VARCHAR2(300),
     title NVARCHAR2(1500),
     display_name NVARCHAR2(1500),
     publication_year NUMBER,
@@ -492,8 +492,8 @@ CREATE TABLE openalex.works_biblio (
     work_id VARCHAR2(50) primary key,
     volume VARCHAR2(50),
     issue VARCHAR2(100),
-    first_page VARCHAR2(50),
-    last_page VARCHAR2(50)
+    first_page VARCHAR2(100),
+    last_page VARCHAR2(100)
 );
 
 ALTER TABLE openalex.works_biblio
@@ -518,7 +518,7 @@ SELECT * FROM OPENALEX.works_concepts WHERE 1 = 0;
 CREATE TABLE openalex.works_ids (
     work_id VARCHAR2(50) primary key,
     openalex VARCHAR2(50),
-    doi VARCHAR2(200),
+    doi VARCHAR2(300),
     mag NUMBER,
     pmid VARCHAR2(100),
     pmcid VARCHAR2(100)
