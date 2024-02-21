@@ -3,10 +3,10 @@ api = new OpenAlexClient();
 api.main(
   syncAuthors = false,
   syncConcepts = false,
-  syncFunders = true,
+  syncFunders = false,
   syncInstitutions = false,
   syncPublishers = false,
   syncSources = false,
-  syncWorks = false
+  syncWorks = true
 );
 </cfscript>

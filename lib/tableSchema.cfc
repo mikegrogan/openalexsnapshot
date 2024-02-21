@@ -176,7 +176,7 @@ component accessors="true" extends="helper" {
           fields: "work_id,volume,issue,first_page,last_page",
           active: false
         },
-        {name: "works_concepts", id: "work_id", fields: "work_id,concept_id,score", active: false},
+        {name: "works_concepts", id: "work_id", fields: "work_id,concept_id,score", active: true},
         {name: "works_ids", id: "work_id", fields: "work_id,openalex,doi,mag,pmid,pmcid", active: false},
         {
           name: "works_locations",
