@@ -1,0 +1,7 @@
+{
+    "scripts":{
+        "format:watchCFC":"cfformat watch **/*.cfc ../../config/cfformat/.cfformat.json",
+        "format:checkCFC":"cfformat check **/*.cfc ../../config/cfformat/.cfformat.json",
+        "format:watchCFM":"cfformat watch **/*.cfm ../../config/cfformat/.cfformat.json --cfm"
+    }
+}
