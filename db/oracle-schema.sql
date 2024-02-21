@@ -478,7 +478,7 @@ CREATE TABLE openalex.works_authorships (
     author_id VARCHAR2(50),
     raw_author_name NCLOB,
     institution_id VARCHAR2(50),
-    raw_affiliation_string CLOB,
+    raw_affiliation_string NCLOB,
     primary key (work_id,author_id)
 );
 

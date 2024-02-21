@@ -38,8 +38,19 @@ foreach ($item in $importlistArr) {
     # Clean up old logs
     Remove-Item -Path "logs\$item.*" -Force -ErrorAction SilentlyContinue
 
+    $parallel = "false"
+    $controlfile="$item.ctl"
+    if ($importMode -eq "append") {
+        $parallel = "true"
+        $controlfile="control$importmode\$item.ctl"    
+    }
+
+    Write-Host "controlfile: $controlfile"
+    Write-Host "parallel: $parallel"
+
+
     # Oracle Import
-    sqlldr userid=$connectionstring direct=true skip=1 errors=0 skip_index_maintenance=true control="$item.ctl" log="logs\$item.log"
+    sqlldr userid=$connectionstring direct=true skip=1 errors=0 skip_index_maintenance=true parallel=$parallel control="$controlfile" log="logs\$item.log"
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[Error]: SQL*Loader encountered errors. Please check the log file for details."

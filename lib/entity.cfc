@@ -24,6 +24,7 @@ component accessors="true" extends="helper" {
       flush;
 
       outputH2("Working on #entity# Inserts/Updates");
+      outputImportant("Import mode for entity is #this.tables.getEntityImportMode(entity)#");
       var manifestResult = this.s3.downloadEntityManifestFromOA(entity = entity);
       if (!manifestResult.success){
         break;
@@ -51,8 +52,16 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
     var result = {success: false};
+
+    // For append mode we don't know if the script terminates mid run currently.
+    // We have to clear out the data and start over
+    if (this.tables.getEntityImportMode(arguments.entity) == "append"){
+      // clear entity main tables
+      var clear = this.tables.clearMainTables(entity = arguments.entity);
+      clearEntityLogImport(entity = arguments.entity);
+    }
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
 
@@ -114,14 +123,24 @@ component accessors="true" extends="helper" {
                 break;
               }
               else{
-                var merged = mergeEntityStageWithProduction(entity = arguments.entity);
+                if (this.tables.getEntityImportMode(arguments.entity) == "merge"){
+                  var merged = mergeEntityStageWithMain(entity = arguments.entity);
+                }
+                else{
+                  var merged = {success: true};
+                }
                 if (merged.success){
                   deleteFile(unCompressedFile.filepath, true);
 
                   outputh3("Cleaning up #arguments.entity# staging tables/files");
 
-                  // clear entity staging tables
-                  var clear = this.tables.clearStagingTables(entity = arguments.entity);
+                  if (this.tables.getEntityImportMode(arguments.entity) == "merge"){
+                    // clear entity staging tables
+                    var clear = this.tables.clearStagingTables(entity = arguments.entity);
+                  }
+                  else{
+                    var clear = {success: true};
+                  }
 
                   // delete entity csv files
                   var csvDelete = deleteEntityCsvDirectory(entity = arguments.entity);
@@ -163,7 +182,7 @@ component accessors="true" extends="helper" {
 
     cfexecute(
       name = "C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe",
-      arguments = "-File #application.localpath#loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" 2>&1",
+      arguments = "-File #application.localpath#loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" -importmode ""append""",
       variable = "runoutput",
       errorVariable = "err",
       timeout = "1000"
@@ -1596,7 +1615,7 @@ component accessors="true" extends="helper" {
    *
    * @entity
    */
-  private any function mergeEntityStageWithProduction(entity){
+  private any function mergeEntityStageWithMain(entity){
     var result = {success: false};
 
     var parallel = 10;
@@ -2783,6 +2802,22 @@ component accessors="true" extends="helper" {
       else{
         result.success = false;
       }
+    }
+
+    return result;
+  }
+
+  private any function clearEntityLogImport(required entity){
+    var result = {success: false};
+    queryExecute(
+      "delete from #getSchema()#.entitylatestsync where entity =:entity",
+      {entity: {value: arguments.entity, cfsqltype: "varchar"}},
+      {datasource: getDatasource(), result: "qryresult"}
+    );
+
+    if (isStruct(qryResult)){
+      result.success = true;
+      outputSuccess("Cleared sync log results for entity #arguments.entity# from database");
     }
 
     return result;
