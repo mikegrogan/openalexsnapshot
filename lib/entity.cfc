@@ -454,7 +454,7 @@ component accessors="true" extends="helper" {
               inputs.data.worksauthorships.append(authorship.author.id);
               inputs.data.worksauthorships.append(authorship.raw_author_name.reReplaceNoCase("[\n\r\t]", " ", "all").left(3000));
               inputs.data.worksauthorships.append(authorship.institutions[1].id);
-              inputs.data.worksauthorships.append(authorship.raw_affiliation_string.reReplaceNoCase("[\n\r\t]", " ", "all"));
+              inputs.data.worksauthorships.append(authorship.raw_affiliation_string.reReplaceNoCase("[\n\r\t]", " ", "all").left(7000));
               inputs.writer.worksauthorships.write(inputs.data.worksauthorships.toList(this.csvDelimiter));
               inputs.writer.worksauthorships.newLine();
               inputs.data.worksauthorships.clear();
