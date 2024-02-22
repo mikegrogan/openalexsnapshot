@@ -7,7 +7,7 @@ truncate into table openalex.stage$works
 Fields terminated by '\t' trailing nullcols
 (
   ID,
-  DOI CHAR(300),
+  DOI CHAR(400),
   TITLE CHAR(1500),
   DISPLAY_NAME CHAR(1500),
   PUBLICATION_YEAR,

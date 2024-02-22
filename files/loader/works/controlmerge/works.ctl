@@ -9,7 +9,7 @@ Fields terminated by '\t' trailing nullcols
   ID,
   SNAPSHOTDATE Date "YYYY-MM-DD",
   SNAPSHOTFILENUMBER,
-  DOI CHAR(300),
+  DOI CHAR(400),
   TITLE CHAR(1500),
   DISPLAY_NAME CHAR(1500),
   PUBLICATION_YEAR,

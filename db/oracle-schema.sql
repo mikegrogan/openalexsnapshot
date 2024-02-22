@@ -396,7 +396,7 @@ CREATE TABLE openalex.works (
     id VARCHAR2(50) primary key,
     snapshotdate date,
     snapshotfilenumber NUMBER,
-    doi VARCHAR2(300),
+    doi VARCHAR2(400),
     title NVARCHAR2(1500),
     display_name NVARCHAR2(1500),
     publication_year NUMBER,
