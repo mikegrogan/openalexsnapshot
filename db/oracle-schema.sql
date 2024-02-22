@@ -394,6 +394,8 @@ SELECT * FROM OPENALEX.sources_ids WHERE 1 = 0;
 
 CREATE TABLE openalex.works (
     id VARCHAR2(50) primary key,
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
     doi VARCHAR2(300),
     title NVARCHAR2(1500),
     display_name NVARCHAR2(1500),
@@ -408,11 +410,11 @@ CREATE TABLE openalex.works (
     language VARCHAR2(50)
 );
 
-ALTER TABLE openalex.works
-MODIFY PARTITION BY HASH(id) PARTITIONS 8;
-
 CREATE TABLE OPENALEX.stage$works AS
 SELECT * FROM OPENALEX.works WHERE 1 = 0;
+
+ALTER TABLE openalex.works
+MODIFY PARTITION BY HASH(id) PARTITIONS 8;
 
 CREATE TABLE openalex.works_primary_locations (
     work_id VARCHAR2(50),

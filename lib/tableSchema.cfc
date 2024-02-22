@@ -174,7 +174,7 @@ component accessors="true" extends="helper" {
           {
             name: "works",
             id: "id",
-            fields: "id,doi,title,display_name,publication_year,publication_date,type,cited_by_count,is_retracted,is_paratext,cited_by_api_url,language",
+            fields: "id,snapshotdate,snapshotfilenumber,doi,title,display_name,publication_year,publication_date,type,cited_by_count,is_retracted,is_paratext,cited_by_api_url,language",
             active: true
           },
           {
@@ -256,18 +256,23 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  public function clearMainTables(entity){
+  public function clearMainTables(entity, latestSnapshot){
     var result = {success: true};
 
     for (var table in getActiveTables(arguments.entity)){
-      queryExecute(
-        "truncate table #this.getSchema()#.#table.name#",
-        {},
-        {datasource: getDatasource(), result: "truncateQryResult"}
+      var test = queryExecute(
+        "delete FROM #this.getSchema()#.WORKS
+        WHERE (snapshotdate > :snapshotdate
+            OR (snapshotdate = :snapshotdate AND snapshotfilenumber > :snapshotfile))",
+        {
+          snapshotdate: {value: arguments.latestsnapshot.snapshotdate, cfsqltype: "date"},
+          snapshotfile: {value: arguments.latestsnapshot.snapshotfile, cfsqltype: "varchar"}
+        },
+        {datasource: getDatasource(), result: "deleteQryResult"}
       );
 
-      if (isStruct(truncateQryResult)){
-        outputSuccess("Truncated main table #table.name#");
+      if (isStruct(deleteQryResult)){
+        outputSuccess("Deleted #deleteQryResult.recordcount# from  main table #table.name#");
       }
       else{
         result.success = false;

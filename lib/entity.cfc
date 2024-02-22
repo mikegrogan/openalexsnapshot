@@ -52,18 +52,21 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 20){
     var result = {success: false};
+
+    var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
 
     // For append mode we don't know if the script terminates mid run currently.
     // We have to clear out the data and start over
     if (this.tables.getEntityImportMode(arguments.entity) == "append"){
       // clear entity main tables
-      var clear = this.tables.clearMainTables(entity = arguments.entity);
-      clearEntityLogImport(entity = arguments.entity);
+      var clear = this.tables.clearMainTables(entity = arguments.entity, latestSnapshot = filesToProcess.latest);
+      // only call this if doing a full reset
+      // clearEntityLogImport(entity = arguments.entity);
     }
+    // writeDump(var = filesToProcess, abort = true, label = "");
 
-    var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
 
     if (filesToProcess.success){
       var limit = 0;
@@ -115,7 +118,11 @@ component accessors="true" extends="helper" {
           if (unCompressedFile.success){
             deleteFile(compressedFilePath, true);
 
-            var processed = processEntityData(entity = arguments.entity, snapshotfile = unCompressedFile);
+            var processed = processEntityData(
+              entity = arguments.entity,
+              snapshotfile = unCompressedFile,
+              snapshotMetaData = snapshot
+            );
             if (processed.success){
               var imported = importDataToStaging(entity = arguments.entity);
               if (!imported){
@@ -214,7 +221,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotfile uncompressed data file to process
    */
-  private any function processEntityData(entity, snapshotfile){
+  private any function processEntityData(entity, snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     outputH3("Creating the csv files for import into Oracle");
@@ -241,7 +248,7 @@ component accessors="true" extends="helper" {
         result = processSourcesData(arguments.snapshotfile);
         break;
       case "works":
-        result = processWorksData(arguments.snapshotfile);
+        result = processWorksData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       default:
     }
@@ -266,6 +273,8 @@ component accessors="true" extends="helper" {
     if (latest.recordcount == 1){
       compareDate = latest.updateDate;
       compareFileNumber = latest.filenumber;
+
+      result.latest = {snapshotdate: latest.updatedate, snapshotfile: latest.filenumber}
       outputNormal("Latest synced #arguments.entity# snapshot found is #dateFormat(compareDate, "yyyy-mm-dd")# &##10142; #latest.filename#");
     }
 
@@ -377,7 +386,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function processWorksData(snapshotfile){
+  private any function processWorksData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     var javaSystem = createObject("java", "java.lang.System");
@@ -417,6 +426,8 @@ component accessors="true" extends="helper" {
 
             // works
             inputs.data.works.append(line.id);
+            inputs.data.works.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.works.append(arguments.snapshotMetaData.filenumber);
             inputs.data.works.append(line.doi);
             inputs.data.works.append(line.title.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.works.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
@@ -1683,6 +1694,8 @@ component accessors="true" extends="helper" {
     WHEN MATCHED THEN
         UPDATE SET
             dest.doi = src.doi,
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.title = src.title,
             dest.display_name = src.display_name,
             dest.publication_year = src.publication_year,
@@ -1695,9 +1708,9 @@ component accessors="true" extends="helper" {
             -- dest.abstract_in,
             dest.language = src.language
     WHEN NOT MATCHED THEN
-        INSERT (id, doi, title, display_name, publication_year, publication_date, type, cited_by_count, is_retracted, is_paratext,
+        INSERT (id, snapshotdate, snapshotfilenumber, doi, title, display_name, publication_year, publication_date, type, cited_by_count, is_retracted, is_paratext,
           cited_by_api_url, language)
-        VALUES (src.id, src.doi, src.title, src.display_name, src.publication_year, src.publication_date, src.type, src.cited_by_count, 
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.doi, src.title, src.display_name, src.publication_year, src.publication_date, src.type, src.cited_by_count, 
           src.is_retracted, src.is_paratext, src.cited_by_api_url, src.language)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
