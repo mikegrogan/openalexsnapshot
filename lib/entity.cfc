@@ -273,10 +273,9 @@ component accessors="true" extends="helper" {
     if (latest.recordcount == 1){
       compareDate = latest.updateDate;
       compareFileNumber = latest.filenumber;
-
-      result.latest = {snapshotdate: latest.updatedate, snapshotfile: latest.filenumber}
       outputNormal("Latest synced #arguments.entity# snapshot found is #dateFormat(compareDate, "yyyy-mm-dd")# &##10142; #latest.filename#");
     }
+    result.latest = {snapshotdate: compareDate, snapshotfile: compareFileNumber}
 
     result.data = result.data.filter((row) => {
       var dateComparison = dateCompare(row.updateDate, compareDate, "d");
