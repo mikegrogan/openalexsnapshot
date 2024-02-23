@@ -1,0 +1,59 @@
+
+SQL*Loader: Release 19.0.0.0.0 - Production on Fri Feb 23 17:40:07 2024
+
+Copyright (c) 1982, 2019, Oracle and/or its affiliates.  All rights reserved.
+
+Control File:   control\merge\mergeids.ctl
+Character Set utf8 specified for all input.
+
+Data File:      .\csv\mergeids.csv
+  Bad File:     .\logs\mergeids.bad
+  Discard File: .\logs\mergeids.dsc 
+ (Allow all discards)
+
+Number to load: ALL
+Number to skip: 1
+Errors allowed: 0
+Continuation:    none specified
+Path used:      Direct
+
+Table OPENALEX.STAGE$MERGEIDS, loaded from every logical record.
+Insert option in effect for this table: TRUNCATE
+TRAILING NULLCOLS option in effect
+
+   Column Name                  Position   Len  Term Encl Datatype
+------------------------------ ---------- ----- ---- ---- ---------------------
+MERGE_DATE                          FIRST     *   ,       DATE YYYY-MM-DD      
+ID                                   NEXT     *   ,       CHARACTER            
+MERGE_INTO_ID                        NEXT     *   ,       CHARACTER            
+
+
+Table OPENALEX.STAGE$MERGEIDS:
+  4 Rows successfully loaded.
+  0 Rows not loaded due to data errors.
+  0 Rows not loaded because all WHEN clauses were failed.
+  0 Rows not loaded because all fields were null.
+
+  Date cache:
+   Max Size:      1000
+   Entries :         1
+   Hits    :         3
+   Misses  :         0
+
+Bind array size not used in direct path.
+Column array  rows :    5000
+Stream buffer bytes:  256000
+Read   buffer bytes: 1048576
+
+Total logical records skipped:          1
+Total logical records read:             4
+Total logical records rejected:         0
+Total logical records discarded:        0
+Total stream buffers loaded by SQL*Loader main thread:        1
+Total stream buffers loaded by SQL*Loader load thread:        0
+
+Run began on Fri Feb 23 17:40:07 2024
+Run ended on Fri Feb 23 17:40:08 2024
+
+Elapsed time was:     00:00:00.56
+CPU time was:         00:00:00.25

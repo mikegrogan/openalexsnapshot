@@ -8,5 +8,7 @@ Fields terminated by '\t' trailing nullcols
 (
   WORK_ID,
   CONCEPT_ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   SCORE
 )

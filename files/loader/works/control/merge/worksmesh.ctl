@@ -6,8 +6,10 @@ DISCARDFILE '.\logs\worksmesh.dsc'
 truncate into table openalex.stage$works_mesh
 Fields terminated by '\t' trailing nullcols
 (
-  MERGE_ID,
   WORK_ID,
+  MERGE_ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   DESCRIPTOR_UI,
   DESCRIPTOR_NAME,
   QUALIFIER_UI,

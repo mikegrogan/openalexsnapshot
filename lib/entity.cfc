@@ -24,7 +24,7 @@ component accessors="true" extends="helper" {
       flush;
 
       outputH2("Working on #entity# Inserts/Updates");
-      outputImportant("Import mode for entity is #this.tables.getEntityImportMode(entity)#");
+      outputImportant("Import mode for #entity# is #this.tables.getEntityImportMode(entity)#");
       var manifestResult = this.s3.downloadEntityManifestFromOA(entity = entity);
       if (!manifestResult.success){
         break;
@@ -52,7 +52,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 20){
+  private any function processEntitySnapshots(required entity, snapshotLimit){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -180,41 +180,6 @@ component accessors="true" extends="helper" {
   }
 
 
-  public any function importDataToStaging(entity){
-    var result = true;
-    var importlist = this.tables.getActiveTableNamesList(arguments.entity);
-
-    outputH3("Starting #arguments.entity# csv import into the staging tables");
-    flush;
-
-    cfexecute(
-      name = "C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe",
-      arguments = "-File #application.localpath#loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" -importmode ""append""",
-      variable = "runoutput",
-      errorVariable = "err",
-      timeout = "1000"
-    );
-
-    if (variables.err !== ""){
-      result = false;
-      outputError(err);
-    }
-    else{
-      if (runoutput.findNoCase("[Error]")){
-        result = false;
-        outputError(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
-      }
-      else{
-        outputSuccess("Sucessfully imported #arguments.entity# staging data");
-        // breaking up the output
-        outputSuccess(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
-      }
-      flush;
-    }
-
-    return result;
-  }
-
   /**
    * Helper function to route processing of entity data
    *
@@ -230,22 +195,22 @@ component accessors="true" extends="helper" {
 
     switch (arguments.entity){
       case "authors":
-        result = processAuthorsData(arguments.snapshotfile);
+        result = processAuthorsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       case "concepts":
-        result = processConceptsData(arguments.snapshotfile);
+        result = processConceptsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       case "funders":
-        result = processFundersData(arguments.snapshotfile);
+        result = processFundersData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       case "institutions":
-        result = processInstitutionsData(arguments.snapshotfile);
+        result = processInstitutionsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       case "publishers":
-        result = processPublishersData(arguments.snapshotfile);
+        result = processPublishersData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       case "sources":
-        result = processSourcesData(arguments.snapshotfile);
+        result = processSourcesData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       case "works":
         result = processWorksData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
@@ -460,8 +425,10 @@ component accessors="true" extends="helper" {
               }
 
               inputs.data.worksauthorships.append(line.id);
-              inputs.data.worksauthorships.append(authorship.author_position);
               inputs.data.worksauthorships.append(authorship.author.id);
+              inputs.data.worksauthorships.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksauthorships.append(arguments.snapshotMetaData.filenumber);
+              inputs.data.worksauthorships.append(authorship.author_position);
               inputs.data.worksauthorships.append(authorship.raw_author_name.reReplaceNoCase("[\n\r\t]", " ", "all").left(3000));
               inputs.data.worksauthorships.append(authorship.institutions[1].id);
               inputs.data.worksauthorships.append(
@@ -492,6 +459,8 @@ component accessors="true" extends="helper" {
                 line.best_oa_location.source.id = "";
               }
 
+              inputs.data.worksbestoalocations.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksbestoalocations.append(arguments.snapshotMetaData.filenumber);
               inputs.data.worksbestoalocations.append(line.id);
               inputs.data.worksbestoalocations.append(line.best_oa_location.source.id);
               inputs.data.worksbestoalocations.append(line.best_oa_location.landing_page_url);
@@ -523,6 +492,8 @@ component accessors="true" extends="helper" {
 
               if (!(line.biblio.volume == "" && line.biblio.issue == "")){
                 inputs.data.worksbiblio.append(line.id);
+                inputs.data.worksbiblio.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.worksbiblio.append(arguments.snapshotMetaData.filenumber);
                 inputs.data.worksbiblio.append(line.biblio.volume);
                 inputs.data.worksbiblio.append(line.biblio.issue);
                 inputs.data.worksbiblio.append(line.biblio.first_page);
@@ -539,6 +510,8 @@ component accessors="true" extends="helper" {
             for (var concept in line.concepts){
               inputs.data.worksconcepts.append(line.id);
               inputs.data.worksconcepts.append(concept.id);
+              inputs.data.worksconcepts.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksconcepts.append(arguments.snapshotMetaData.filenumber);
               inputs.data.worksconcepts.append(concept.score);
 
               inputs.writer.worksconcepts.write(inputs.data.worksconcepts.toList(this.csvDelimiter));
@@ -564,6 +537,8 @@ component accessors="true" extends="helper" {
               }
 
               inputs.data.worksids.append(line.id);
+              inputs.data.worksids.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksids.append(arguments.snapshotMetaData.filenumber);
               inputs.data.worksids.append(line.ids.openalex);
               inputs.data.worksids.append(line.ids.doi);
               inputs.data.worksids.append(line.ids.mag);
@@ -613,8 +588,10 @@ component accessors="true" extends="helper" {
                 mesh.qualifier_name = "";
               }
 
-              inputs.data.worksmesh.append(mesh.descriptor_ui & mesh.qualifier_ui);
               inputs.data.worksmesh.append(line.id);
+              inputs.data.worksmesh.append(mesh.descriptor_ui & mesh.qualifier_ui);
+              inputs.data.worksmesh.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksmesh.append(arguments.snapshotMetaData.filenumber);
               inputs.data.worksmesh.append(mesh.descriptor_ui);
               inputs.data.worksmesh.append(mesh.descriptor_name);
               inputs.data.worksmesh.append(mesh.qualifier_ui);
@@ -634,6 +611,8 @@ component accessors="true" extends="helper" {
               }
 
               inputs.data.worksopenaccess.append(line.id);
+              inputs.data.worksopenaccess.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksopenaccess.append(arguments.snapshotMetaData.filenumber);
               (line.open_access.is_oa) ? inputs.data.worksopenaccess.append("1") : inputs.data.worksopenaccess.append("0");
               inputs.data.worksopenaccess.append(line.open_access.oa_status);
               inputs.data.worksopenaccess.append(line.open_access.oa_url);
@@ -651,6 +630,8 @@ component accessors="true" extends="helper" {
             for (var referenced_work_id in line.referenced_works){
               inputs.data.worksReferencedWorks.append(line.id);
               inputs.data.worksReferencedWorks.append(referenced_work_id);
+              inputs.data.worksReferencedWorks.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksReferencedWorks.append(arguments.snapshotMetaData.filenumber);
               inputs.writer.worksReferencedWorks.write(inputs.data.worksReferencedWorks.toList(this.csvDelimiter));
               inputs.writer.worksReferencedWorks.newLine();
               inputs.data.worksReferencedWorks.clear();
@@ -662,6 +643,8 @@ component accessors="true" extends="helper" {
             for (var related_work_id in line.related_works){
               inputs.data.worksRelatedWorks.append(line.id);
               inputs.data.worksRelatedWorks.append(related_work_id);
+              inputs.data.worksRelatedWorks.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksRelatedWorks.append(arguments.snapshotMetaData.filenumber);
               inputs.writer.worksRelatedWorks.write(inputs.data.worksRelatedWorks.toList(this.csvDelimiter));
               inputs.writer.worksRelatedWorks.newLine();
               inputs.data.worksRelatedWorks.clear();
@@ -704,7 +687,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function processSourcesData(snapshotfile){
+  private any function processSourcesData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     var javaSystem = createObject("java", "java.lang.System");
@@ -740,6 +723,8 @@ component accessors="true" extends="helper" {
 
             // publishers
             inputs.data.sources.append(line.id);
+            inputs.data.sources.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.sources.append(arguments.snapshotMetaData.filenumber);
             inputs.data.sources.append(line.issn_l);
             (line.issn.isEmpty()) ? inputs.data.sources.append("") : inputs.data.sources.append(
               line.issn.slice(1, min(line.issn.len(), 100)).toJson()
@@ -767,6 +752,8 @@ component accessors="true" extends="helper" {
 
               inputs.data.sourcescountsbyyear.append(line.id);
               inputs.data.sourcescountsbyyear.append(counts.year);
+              inputs.data.sourcescountsbyyear.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.sourcescountsbyyear.append(arguments.snapshotMetaData.filenumber);
               inputs.data.sourcescountsbyyear.append(counts.works_count);
               inputs.data.sourcescountsbyyear.append(counts.cited_by_count);
               inputs.data.sourcescountsbyyear.append(counts.oa_works_count);
@@ -795,6 +782,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.sourcesids.append(line.id);
+            inputs.data.sourcesids.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.sourcesids.append(arguments.snapshotMetaData.filenumber);
             inputs.data.sourcesids.append(line.ids.openalex);
             inputs.data.sourcesids.append(line.ids.issn_l);
             (line.issn.isEmpty()) ? inputs.data.sourcesids.append("") : inputs.data.sourcesids.append(
@@ -845,7 +834,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function processPublishersData(snapshotfile){
+  private any function processPublishersData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     var javaSystem = createObject("java", "java.lang.System");
@@ -881,6 +870,8 @@ component accessors="true" extends="helper" {
 
             // publishers
             inputs.data.publishers.append(line.id);
+            inputs.data.publishers.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.publishers.append(arguments.snapshotMetaData.filenumber);
             inputs.data.publishers.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.publishers.append("") : inputs.data.publishers.append(
               line.alternate_titles.slice(1, min(line.alternate_titles.len(), 100)).toJson()
@@ -912,6 +903,8 @@ component accessors="true" extends="helper" {
 
               inputs.data.publisherscountsbyyear.append(line.id);
               inputs.data.publisherscountsbyyear.append(counts.year);
+              inputs.data.publisherscountsbyyear.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.publisherscountsbyyear.append(arguments.snapshotMetaData.filenumber);
               inputs.data.publisherscountsbyyear.append(counts.works_count);
               inputs.data.publisherscountsbyyear.append(counts.cited_by_count);
               inputs.data.publisherscountsbyyear.append(counts.oa_works_count);
@@ -931,6 +924,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.publishersids.append(line.id);
+            inputs.data.publishersids.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.publishersids.append(arguments.snapshotMetaData.filenumber);
             inputs.data.publishersids.append(line.ids.openalex);
             inputs.data.publishersids.append(line.ids.ror);
             inputs.data.publishersids.append(line.ids.wikidata);
@@ -976,7 +971,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function processInstitutionsData(snapshotfile){
+  private any function processInstitutionsData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     var javaSystem = createObject("java", "java.lang.System");
@@ -1018,6 +1013,8 @@ component accessors="true" extends="helper" {
 
             // insitutions
             inputs.data.institutions.append(line.id);
+            inputs.data.institutions.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.institutions.append(arguments.snapshotMetaData.filenumber);
             inputs.data.institutions.append(line.ror);
             inputs.data.institutions.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.institutions.append(line.country_code);
@@ -1046,6 +1043,8 @@ component accessors="true" extends="helper" {
             for (var association in line.associated_institutions){
               inputs.data.institutionsassociatedinstitutions.append(line.id);
               inputs.data.institutionsassociatedinstitutions.append(association.id);
+              inputs.data.institutionsassociatedinstitutions.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.institutionsassociatedinstitutions.append(arguments.snapshotMetaData.filenumber);
               inputs.data.institutionsassociatedinstitutions.append(association.relationship);
 
               inputs.writer.institutionsassociatedinstitutions.write(
@@ -1065,6 +1064,8 @@ component accessors="true" extends="helper" {
 
               inputs.data.institutionscountsbyyear.append(line.id);
               inputs.data.institutionscountsbyyear.append(counts.year);
+              inputs.data.institutionscountsbyyear.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.institutionscountsbyyear.append(arguments.snapshotMetaData.filenumber);
               inputs.data.institutionscountsbyyear.append(counts.works_count);
               inputs.data.institutionscountsbyyear.append(counts.cited_by_count);
               inputs.data.institutionscountsbyyear.append(counts.oa_works_count);
@@ -1099,6 +1100,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.institutionsgeo.append(line.id);
+            inputs.data.institutionsgeo.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.institutionsgeo.append(arguments.snapshotMetaData.filenumber);
             inputs.data.institutionsgeo.append(line.geo.city);
             inputs.data.institutionsgeo.append(line.geo.geonames_city_id);
             inputs.data.institutionsgeo.append(line.geo.region);
@@ -1130,6 +1133,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.institutionsids.append(line.id);
+            inputs.data.institutionsids.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.institutionsids.append(arguments.snapshotMetaData.filenumber);
             inputs.data.institutionsids.append(line.ids.openalex);
             inputs.data.institutionsids.append(line.ids.ror);
             inputs.data.institutionsids.append(line.ids.grid);
@@ -1178,7 +1183,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function processFundersData(snapshotfile){
+  private any function processFundersData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     var javaSystem = createObject("java", "java.lang.System");
@@ -1217,6 +1222,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.funders.append(line.id);
+            inputs.data.funders.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.funders.append(arguments.snapshotMetaData.filenumber);
             inputs.data.funders.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.alternate_titles.isEmpty()) ? inputs.data.funders.append("") : inputs.data.funders.append(
               line.alternate_titles.slice(1, min(line.alternate_titles.len(), 100)).toJson()
@@ -1241,6 +1248,8 @@ component accessors="true" extends="helper" {
             for (var counts in line.counts_by_year){
               inputs.data.funderscountsbyyear.append(line.id);
               inputs.data.funderscountsbyyear.append(counts.year);
+              inputs.data.funderscountsbyyear.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.funderscountsbyyear.append(arguments.snapshotMetaData.filenumber);
               inputs.data.funderscountsbyyear.append(counts.works_count);
               inputs.data.funderscountsbyyear.append(counts.cited_by_count);
 
@@ -1266,6 +1275,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.fundersids.append(line.id);
+            inputs.data.fundersids.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.fundersids.append(arguments.snapshotMetaData.filenumber);
             inputs.data.fundersids.append(line.ids.openalex);
             inputs.data.fundersids.append(line.ids.ror);
             inputs.data.fundersids.append(line.ids.wikidata);
@@ -1313,7 +1324,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function processAuthorsData(snapshotfile){
+  private any function processAuthorsData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     var javaSystem = createObject("java", "java.lang.System");
@@ -1345,6 +1356,8 @@ component accessors="true" extends="helper" {
 
             // AUTHORS
             inputs.data.authors.append(line.id);
+            inputs.data.authors.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.authors.append(arguments.snapshotMetaData.filenumber);
             inputs.data.authors.append(line.orcid);
             inputs.data.authors.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             (line.display_name_alternatives.isEmpty()) ? inputs.data.authors.append("") : inputs.data.authors.append(
@@ -1369,6 +1382,8 @@ component accessors="true" extends="helper" {
                   inputs.data.authorsaffiliations.append(line.id);
                   inputs.data.authorsaffiliations.append(affiliation.institution.id);
                   inputs.data.authorsaffiliations.append(year);
+                  inputs.data.authorsaffiliations.append(arguments.snapshotMetaData.updateDate);
+                  inputs.data.authorsaffiliations.append(arguments.snapshotMetaData.filenumber);
                   inputs.writer.authorsaffiliations.write(inputs.data.authorsaffiliations.toList(this.csvDelimiter));
                   inputs.writer.authorsaffiliations.newLine();
                   inputs.data.authorsaffiliations.clear();
@@ -1382,6 +1397,8 @@ component accessors="true" extends="helper" {
             for (var counts in line.counts_by_year){
               inputs.data.authorscountsbyyear.append(line.id);
               inputs.data.authorscountsbyyear.append(counts.year);
+              inputs.data.authorscountsbyyear.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.authorscountsbyyear.append(arguments.snapshotMetaData.filenumber);
               inputs.data.authorscountsbyyear.append(counts.works_count);
               inputs.data.authorscountsbyyear.append(counts.cited_by_count);
               inputs.data.authorscountsbyyear.append(counts.oa_works_count);
@@ -1411,6 +1428,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.authorsids.append(line.id);
+            inputs.data.authorsids.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.authorsids.append(arguments.snapshotMetaData.filenumber);
             inputs.data.authorsids.append(line.ids.openalex);
             inputs.data.authorsids.append(line.ids.orcid);
             inputs.data.authorsids.append(line.ids.scopus);
@@ -1457,7 +1476,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function processConceptsData(snapshotfile){
+  private any function processConceptsData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
     var javaSystem = createObject("java", "java.lang.System");
@@ -1492,6 +1511,8 @@ component accessors="true" extends="helper" {
 
             // Concepts
             inputs.data.concepts.append(line.id);
+            inputs.data.concepts.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.concepts.append(arguments.snapshotMetaData.filenumber);
             inputs.data.concepts.append(line.wikidata);
             inputs.data.concepts.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
             inputs.data.concepts.append(line.level);
@@ -1513,6 +1534,8 @@ component accessors="true" extends="helper" {
             for (var ancestor in line.ancestors){
               inputs.data.conceptsancestors.append(line.id);
               inputs.data.conceptsancestors.append(ancestor.id);
+              inputs.data.conceptsancestors.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.conceptsancestors.append(arguments.snapshotMetaData.filenumber);
 
               inputs.writer.conceptsancestors.write(inputs.data.conceptsancestors.toList(this.csvDelimiter));
               inputs.writer.conceptsancestors.newLine();
@@ -1529,6 +1552,8 @@ component accessors="true" extends="helper" {
 
               inputs.data.conceptscountsbyyear.append(line.id);
               inputs.data.conceptscountsbyyear.append(counts.year);
+              inputs.data.conceptscountsbyyear.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.conceptscountsbyyear.append(arguments.snapshotMetaData.filenumber);
               inputs.data.conceptscountsbyyear.append(counts.works_count);
               inputs.data.conceptscountsbyyear.append(counts.cited_by_count);
               inputs.data.conceptscountsbyyear.append(counts.oa_works_count);
@@ -1557,6 +1582,8 @@ component accessors="true" extends="helper" {
             }
 
             inputs.data.conceptsids.append(line.id);
+            inputs.data.conceptsids.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.conceptsids.append(arguments.snapshotMetaData.filenumber);
             inputs.data.conceptsids.append(line.ids.openalex);
             inputs.data.conceptsids.append(line.ids.wikidata);
             inputs.data.conceptsids.append(line.ids.wikipedia);
@@ -1578,6 +1605,8 @@ component accessors="true" extends="helper" {
             for (var related in line.related_concepts){
               inputs.data.conceptsrelatedconcepts.append(line.id);
               inputs.data.conceptsrelatedconcepts.append(related.id);
+              inputs.data.conceptsrelatedconcepts.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.conceptsrelatedconcepts.append(arguments.snapshotMetaData.filenumber);
               inputs.data.conceptsrelatedconcepts.append(related.score);
 
               inputs.writer.conceptsrelatedconcepts.write(inputs.data.conceptsrelatedconcepts.toList(this.csvDelimiter));
@@ -1637,25 +1666,25 @@ component accessors="true" extends="helper" {
 
     switch (arguments.entity){
       case "authors":
-        result = mergeAuthorsStageWithProduction(parallel);
+        result = mergeAuthorsStageWithMain(parallel);
         break;
       case "concepts":
-        result = mergeConceptsStageWithProduction(parallel);
+        result = mergeConceptsStageWithMain(parallel);
         break;
       case "funders":
-        result = mergeFundersStageWithProduction(parallel);
+        result = mergeFundersStageWithMain(parallel);
         break;
       case "institutions":
-        result = mergeInstitutionsStageWithProduction(parallel);
+        result = mergeInstitutionsStageWithMain(parallel);
         break;
       case "publishers":
-        result = mergePublishersStageWithProduction(parallel);
+        result = mergePublishersStageWithMain(parallel);
         break;
       case "sources":
-        result = mergeSourcesStageWithProduction(parallel);
+        result = mergeSourcesStageWithMain(parallel);
         break;
       case "works":
-        result = mergeWorksStageWithProduction(parallel);
+        result = mergeWorksStageWithMain(parallel);
         break;
       default:
     }
@@ -1663,7 +1692,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeWorksStageWithProduction(parallel = 1){
+  private any function mergeWorksStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -1730,11 +1759,13 @@ component accessors="true" extends="helper" {
       queryExecute(
         "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.works_authorships dest
     USING (
-      SELECT work_id, author_id, author_position, raw_author_name, institution_id, raw_affiliation_string
+      SELECT work_id, author_id, snapshotdate, snapshotfilenumber, author_position, raw_author_name, institution_id, raw_affiliation_string
         FROM (
             SELECT 
                 work_id, 
                 author_id, 
+                snapshotdate,
+                snapshotfilenumber,
                 author_position, 
                 raw_author_name, 
                 institution_id, 
@@ -1747,12 +1778,14 @@ component accessors="true" extends="helper" {
     ON (dest.work_id = src.work_id AND dest.author_id = src.author_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.author_position = src.author_position,
             dest.raw_author_name = src.raw_author_name,
             dest.raw_affiliation_string = src.raw_affiliation_string
     WHEN NOT MATCHED THEN
-        INSERT (work_id, author_position, author_id, raw_author_name, institution_id, raw_affiliation_string)
-        VALUES (src.work_id, src.author_position, src.author_id, src.raw_author_name, src.institution_id, src.raw_affiliation_string)",
+        INSERT (work_id, snapshotdate, snapshotfilenumber, author_position, author_id, raw_author_name, institution_id, raw_affiliation_string)
+        VALUES (src.work_id, src.snapshotdate, src.snapshotfilenumber, src.author_position, src.author_id, src.raw_author_name, src.institution_id, src.raw_affiliation_string)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -1775,14 +1808,16 @@ component accessors="true" extends="helper" {
     ON (dest.work_id = src.work_id AND dest.source_id = src.source_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.landing_page_url = src.landing_page_url,
             dest.pdf_url = src.pdf_url,
             dest.is_oa = src.is_oa,
             dest.version = src.version,
             dest.license = src.license
     WHEN NOT MATCHED THEN
-        INSERT (work_id, source_id, landing_page_url, pdf_url, is_oa, version, license)
-        VALUES (src.work_id, src.source_id, src.landing_page_url, src.pdf_url, src.is_oa, src.version, src.license)",
+        INSERT (snapshotdate, snapshotfilenumber, work_id, source_id, landing_page_url, pdf_url, is_oa, version, license)
+        VALUES (src.snapshotdate, src.snapshotfilenumber, src.work_id, src.source_id, src.landing_page_url, src.pdf_url, src.is_oa, src.version, src.license)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -1805,13 +1840,15 @@ component accessors="true" extends="helper" {
     ON (dest.work_id = src.work_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.volume = src.volume,
             dest.issue = src.issue,
             dest.first_page = src.first_page,
             dest.last_page = src.last_page
     WHEN NOT MATCHED THEN
-        INSERT (work_id, volume, issue, first_page, last_page)
-        VALUES (src.work_id, src.volume, src.issue, src.first_page, src.last_page)",
+        INSERT (work_id, snapshotdate, snapshotfilenumber, volume, issue, first_page, last_page)
+        VALUES (src.work_id, src.snapshotdate, src.snapshotfilenumber, src.volume, src.issue, src.first_page, src.last_page)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -1836,8 +1873,8 @@ component accessors="true" extends="helper" {
         UPDATE SET
             dest.score = src.score
     WHEN NOT MATCHED THEN
-        INSERT (work_id, concept_id, score)
-        VALUES (src.work_id, src.concept_id, src.score)",
+        INSERT (work_id, concept_id, snapshotdate, snapshotfilenumber, score)
+        VALUES (src.work_id, src.concept_id, src.snapshotdate, src.snapshotfilenumber, src.score)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -1860,14 +1897,16 @@ component accessors="true" extends="helper" {
     ON (dest.work_id = src.work_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.openalex = src.openalex,
             dest.doi = src.doi,
             dest.mag = src.mag,
             dest.pmid = src.pmid,
             dest.pmcid = src.pmcid
     WHEN NOT MATCHED THEN
-        INSERT (work_id, openalex, doi, mag, pmid, pmcid)
-        VALUES (src.work_id, src.openalex, src.doi, src.mag, src.pmid, src.pmcid)",
+        INSERT (work_id, snapshotdate, snapshotfilenumber, openalex, doi, mag, pmid, pmcid)
+        VALUES (src.work_id, src.snapshotdate, src.snapshotfilenumber, src.openalex, src.doi, src.mag, src.pmid, src.pmcid)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -1918,14 +1957,16 @@ component accessors="true" extends="helper" {
     ON (dest.work_id = src.work_id AND dest.merge_id = src.merge_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.descriptor_ui = src.descriptor_ui,
             dest.descriptor_name = src.descriptor_name,
             dest.qualifier_ui = src.qualifier_ui,
             dest.qualifier_name = src.qualifier_name,
             dest.is_major_topic = src.is_major_topic
     WHEN NOT MATCHED THEN
-        INSERT (merge_id, work_id, descriptor_ui, descriptor_name, qualifier_ui, qualifier_name, is_major_topic)
-        VALUES (src.merge_id, src.work_id, src.descriptor_ui, src.descriptor_name, src.qualifier_ui, src.qualifier_name, src.is_major_topic)",
+        INSERT (merge_id, work_id, snapshotdate, snapshotfilenumber, descriptor_ui, descriptor_name, qualifier_ui, qualifier_name, is_major_topic)
+        VALUES (src.merge_id, src.work_id, src.snapshotdate, src.snapshotfilenumber, src.descriptor_ui, src.descriptor_name, src.qualifier_ui, src.qualifier_name, src.is_major_topic)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -1948,13 +1989,15 @@ component accessors="true" extends="helper" {
     ON (dest.work_id = src.work_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.is_oa = src.is_oa,
             dest.oa_status = src.oa_status,
             dest.oa_url = src.oa_url,
             dest.any_repository_has_fulltext = src.any_repository_has_fulltext
     WHEN NOT MATCHED THEN
-        INSERT (work_id, is_oa, oa_status, oa_url, any_repository_has_fulltext)
-        VALUES (src.work_id, src.is_oa, src.oa_status, src.oa_url, src.any_repository_has_fulltext)",
+        INSERT (work_id, snapshotdate, snapshotfilenumber, is_oa, oa_status, oa_url, any_repository_has_fulltext)
+        VALUES (src.work_id, src.snapshotdate, src.snapshotfilenumber, src.is_oa, src.oa_status, src.oa_url, src.any_repository_has_fulltext)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -1978,8 +2021,8 @@ component accessors="true" extends="helper" {
     USING #getSchema()#.stage$works_referenced_works src
     ON (dest.work_id = src.work_id AND dest.referenced_work_id = src.referenced_work_id)
     WHEN NOT MATCHED THEN
-        INSERT (work_id, referenced_work_id)
-        VALUES (src.work_id, src.referenced_work_id)",
+        INSERT (work_id, referenced_work_id, snapshotdate, snapshotfilenumber)
+        VALUES (src.work_id, src.referenced_work_id, src.snapshotdate, src.snapshotfilenumber)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2001,8 +2044,8 @@ component accessors="true" extends="helper" {
     USING #getSchema()#.stage$works_related_works src
     ON (dest.work_id = src.work_id AND dest.related_work_id = src.related_work_id)
     WHEN NOT MATCHED THEN
-        INSERT (work_id, related_work_id)
-        VALUES (src.work_id, src.related_work_id)",
+        INSERT (work_id, related_work_id, snapshotdate, snapshotfilenumber)
+        VALUES (src.work_id, src.related_work_id, src.snapshotdate, src.snapshotfilenumber)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2020,7 +2063,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeSourcesStageWithProduction(parallel = 1){
+  private any function mergeSourcesStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -2132,7 +2175,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergePublishersStageWithProduction(parallel = 1){
+  private any function mergePublishersStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -2242,7 +2285,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeInstitutionsStageWithProduction(parallel = 1){
+  private any function mergeInstitutionsStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -2416,7 +2459,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeConceptsStageWithProduction(parallel = 1){
+  private any function mergeConceptsStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -2578,7 +2621,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeFundersStageWithProduction(parallel = 1){
+  private any function mergeFundersStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -2688,7 +2731,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeAuthorsStageWithProduction(parallel = 1){
+  private any function mergeAuthorsStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {

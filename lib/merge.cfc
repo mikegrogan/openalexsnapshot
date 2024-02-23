@@ -48,7 +48,11 @@ component accessors="true" extends="helper" {
             deleteFile(compressedFilePath, true);
 
             var imported = importDataToStaging(entity = "mergeids");
-            if (imported){
+            if (!imported){
+              outputError("There was an error during the database import. Script has been halted. Please review the \files\loader\mergeids\logs folder for more details");
+              break;
+            }
+            else{
               var processed = processMergeData(entity = arguments.entity);
               if (processed.success){
                 deleteFile(unCompressedFile.filepath, false);
@@ -140,7 +144,7 @@ component accessors="true" extends="helper" {
     outputh3("Delete merge records from tables");
     flush;
 
-    // currently won't delete ids from non active tables. think this is the 
+    // currently won't delete ids from non active tables. think this is the
     // best approach just in case the table doesn't exist.
     for (var table in this.tables.getActiveTables(arguments.entity)){
       queryExecute(

@@ -277,7 +277,7 @@ CREATE TABLE openalex.funders_ids (
     ror VARCHAR2(50),
     wikidata VARCHAR2(50),
     crossref VARCHAR2(50),
-    doi VARCHAR2(300)
+    doi VARCHAR2(400)
 );
 
 CREATE TABLE OPENALEX.stage$funders_ids AS
@@ -638,7 +638,7 @@ CREATE TABLE openalex.works_ids (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
-    doi VARCHAR2(300),
+    doi VARCHAR2(400),
     mag NUMBER,
     pmid VARCHAR2(100),
     pmcid VARCHAR2(100)

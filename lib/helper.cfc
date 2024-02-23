@@ -154,6 +154,42 @@ component accessors="true" {
     return result;
   }
 
+  public any function importDataToStaging(entity){
+    var result = true;
+    var importlist = this.tables.getActiveTableNamesList(arguments.entity);
+    var importmode = this.tables.getEntityImportMode(arguments.entity);
+
+    outputH3("Starting #arguments.entity# csv import into the staging tables");
+    flush;
+
+    cfexecute(
+      name = "C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe",
+      arguments = "-File #application.localpath#loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" -importmode ""#importmode#""",
+      variable = "runoutput",
+      errorVariable = "err",
+      timeout = "1000"
+    );
+
+    if (variables.err !== ""){
+      result = false;
+      outputError(err);
+    }
+    else{
+      if (runoutput.findNoCase("[Error]")){
+        result = false;
+        outputError(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
+      }
+      else{
+        outputSuccess("Sucessfully imported #arguments.entity# staging data");
+        // breaking up the output
+        outputSuccess(runoutput.reReplaceNoCase("SQL\*Loader", "<br><br>SQL*Loader", "all"));
+      }
+      flush;
+    }
+
+    return result;
+  }
+
   public string function getDatasource(){
     return application.database.datasource;
   }
