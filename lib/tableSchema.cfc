@@ -286,7 +286,7 @@ component accessors="true" extends="helper" {
 
     for (var table in getActiveTables(arguments.entity)){
       var test = queryExecute(
-        "delete FROM #this.getSchema()#.WORKS
+        "delete FROM #this.getSchema()#.#table.name#
         WHERE (snapshotdate > :snapshotdate
             OR (snapshotdate = :snapshotdate AND snapshotfilenumber > :snapshotfile))",
         {
