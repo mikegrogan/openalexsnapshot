@@ -194,61 +194,61 @@ component accessors="true" extends="helper" {
           {
             name: "works_best_oa_locations",
             id: "work_id",
-            fields: "unique_id,author_id,snapshotdate,work_id,source_id,landing_page_url,pdf_url,is_oa,version,license",
+            fields: "snapshotdate,snapshotfilenumber,work_id,source_id,landing_page_url,pdf_url,is_oa,version,license",
             active: true
           },
           {
             name: "works_biblio",
             id: "work_id",
-            fields: "work_id,snapshotdate,work_id,volume,issue,first_page,last_page",
+            fields: "work_id,snapshotdate,snapshotfilenumber,volume,issue,first_page,last_page",
             active: true
           },
           {
             name: "works_concepts",
             id: "work_id",
-            fields: "work_id,concept_id,snapshotdate,work_id,score",
+            fields: "work_id,concept_id,snapshotdate,snapshotfilenumber,score",
             active: true
           },
           {
             name: "works_ids",
             id: "work_id",
-            fields: "work_id,snapshotdate,work_id,openalex,doi,mag,pmid,pmcid",
+            fields: "work_id,snapshotdate,snapshotfilenumber,openalex,doi,mag,pmid,pmcid",
             active: true
           },
           {
             name: "works_locations",
             id: "work_id",
-            fields: "work_id,source_id,snapshotdate,work_id,landing_page_url,pdf_url,is_oa,version,license",
+            fields: "work_id,source_id,snapshotdate,snapshotfilenumber,landing_page_url,pdf_url,is_oa,version,license",
             active: true
           },
           {
             name: "works_mesh",
             id: "work_id",
-            fields: "work_id,merge_id,snapshotdate,work_id,descriptor_ui,descriptor_name,qualifier_ui,qualifier_name,is_major_topic",
+            fields: "work_id,merge_id,snapshotdate,snapshotfilenumber,descriptor_ui,descriptor_name,qualifier_ui,qualifier_name,is_major_topic",
             active: true
           },
           {
             name: "works_open_access",
             id: "work_id",
-            fields: "work_id,snapshotdate,work_id,is_oa,oa_status,oa_url,any_repository_has_fulltext",
+            fields: "work_id,snapshotdate,snapshotfilenumber,is_oa,oa_status,oa_url,any_repository_has_fulltext",
             active: true
           },
           {
             name: "works_primary_locations",
             id: "work_id",
-            fields: "work_id,source_id,snapshotdate,work_id,landing_page_url,pdf_url,is_oa,version,license",
+            fields: "work_id,source_id,snapshotdate,snapshotfilenumber,landing_page_url,pdf_url,is_oa,version,license",
             active: false
           },
           {
             name: "works_referenced_works",
             id: "work_id",
-            fields: "work_id,referenced_work_id,snapshotdate,work_id",
+            fields: "work_id,referenced_work_id,snapshotdate,snapshotfilenumber",
             active: true
           },
           {
             name: "works_related_works",
             id: "work_id",
-            fields: "work_id,related_work_id,snapshotdate,work_id",
+            fields: "work_id,related_work_id,snapshotdate,snapshotfilenumber",
             active: true
           }
         ],

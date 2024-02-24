@@ -52,7 +52,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -464,7 +464,7 @@ component accessors="true" extends="helper" {
               inputs.data.worksbestoalocations.append(line.id);
               inputs.data.worksbestoalocations.append(line.best_oa_location.source.id);
               inputs.data.worksbestoalocations.append(line.best_oa_location.landing_page_url);
-              inputs.data.worksbestoalocations.append(line.best_oa_location.pdf_url);
+              inputs.data.worksbestoalocations.append(line.best_oa_location.pdf_url.reReplaceNoCase("[\n\r\t]", " ", "all"));
               (line.best_oa_location.is_oa) ? inputs.data.worksbestoalocations.append("1") : inputs.data.worksbestoalocations.append("0");
               inputs.data.worksbestoalocations.append(line.best_oa_location.version);
               inputs.data.worksbestoalocations.append(line.best_oa_location.license);
@@ -615,7 +615,8 @@ component accessors="true" extends="helper" {
               inputs.data.worksopenaccess.append(arguments.snapshotMetaData.filenumber);
               (line.open_access.is_oa) ? inputs.data.worksopenaccess.append("1") : inputs.data.worksopenaccess.append("0");
               inputs.data.worksopenaccess.append(line.open_access.oa_status);
-              inputs.data.worksopenaccess.append(line.open_access.oa_url);
+              inputs.data.worksopenaccess.append(line.open_access.oa_url.reReplaceNoCase("[\n\r\t]", " ", "all"));
+              ;
               (line.open_access.any_repository_has_fulltext) ? inputs.data.worksopenaccess.append("1") : inputs.data.worksopenaccess.append("0");
               inputs.writer.worksopenaccess.write(inputs.data.worksopenaccess.toList(this.csvDelimiter));
               inputs.writer.worksopenaccess.newLine();
