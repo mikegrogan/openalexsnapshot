@@ -11,6 +11,6 @@ Fields terminated by '\t' trailing nullcols
   SNAPSHOTFILENUMBER,
   IS_OA,
   OA_STATUS,
-  OA_URL char(2000),
+  OA_URL char(3000),
   ANY_REPOSITORY_HAS_FULLTEXT
 )
