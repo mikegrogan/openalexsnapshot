@@ -565,7 +565,7 @@ CREATE TABLE openalex.works_best_oa_locations (
     work_id VARCHAR2(50),
     source_id VARCHAR2(50),
     landing_page_url VARCHAR2(1000),
-    pdf_url VARCHAR2(1500),
+    pdf_url VARCHAR2(2000),
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),
@@ -675,7 +675,7 @@ CREATE TABLE openalex.works_open_access (
     snapshotfilenumber NUMBER,
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     oa_status VARCHAR2(50),
-    oa_url VARCHAR2(1500),
+    oa_url VARCHAR2(2000),
     any_repository_has_fulltext NUMBER(1,0)  -- Assuming 1 or 0 for boolean values
 );
 
