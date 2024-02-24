@@ -52,7 +52,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
+  private any function processEntitySnapshots(required entity, snapshotLimit){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -495,9 +495,9 @@ component accessors="true" extends="helper" {
                 inputs.data.worksbiblio.append(arguments.snapshotMetaData.updateDate);
                 inputs.data.worksbiblio.append(arguments.snapshotMetaData.filenumber);
                 inputs.data.worksbiblio.append(line.biblio.volume);
-                inputs.data.worksbiblio.append(line.biblio.issue);
-                inputs.data.worksbiblio.append(line.biblio.first_page);
-                inputs.data.worksbiblio.append(line.biblio.last_page);
+                inputs.data.worksbiblio.append(line.biblio.issue.left(100));
+                inputs.data.worksbiblio.append(line.biblio.first_page.left(100));
+                inputs.data.worksbiblio.append(line.biblio.last_page.left(100));
                 inputs.writer.worksbiblio.write(inputs.data.worksbiblio.toList(this.csvDelimiter));
                 inputs.writer.worksbiblio.newLine();
                 inputs.data.worksbiblio.clear();
