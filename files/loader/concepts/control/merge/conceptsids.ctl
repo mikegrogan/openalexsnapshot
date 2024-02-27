@@ -7,6 +7,8 @@ truncate into table openalex.stage$concepts_ids
 Fields terminated by '\t' trailing nullcols
 (
   CONCEPT_ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   OPENALEX,
   WIKIDATA,
   WIKIPEDIA CHAR(3000),

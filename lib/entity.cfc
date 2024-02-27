@@ -52,21 +52,10 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 2){
+  private any function processEntitySnapshots(required entity, snapshotLimit){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
-
-    // For append mode we don't know if the script terminates mid run. Maybe there was an error with the sqlloader import, etc
-    // We have to clear out possible incomplete snapshot data and start over
-    if (this.tables.getEntityImportMode(arguments.entity) == "append"){
-      // clear entity main tables
-      // var clear = this.tables.clearMainTablesPastSnapshot(entity = arguments.entity, latestSnapshot = filesToProcess.latest);
-      // only call this if doing a full reset
-      // clearEntityLogImport(entity = arguments.entity);
-    }
-    // writeDump(var = filesToProcess, abort = true, label = "");
-
 
     if (filesToProcess.success){
       var limit = 0;
@@ -130,23 +119,20 @@ component accessors="true" extends="helper" {
                 break;
               }
               else{
+                var merged = {success: true};
                 if (this.tables.getEntityImportMode(arguments.entity) == "merge"){
                   var merged = mergeEntityStageWithMain(entity = arguments.entity);
                 }
-                else{
-                  var merged = {success: true};
-                }
+
                 if (merged.success){
                   deleteFile(unCompressedFile.filepath, true);
 
                   outputh3("Cleaning up #arguments.entity# staging tables/files");
 
+                  var clear = {success: true};
                   if (this.tables.getEntityImportMode(arguments.entity) == "merge"){
                     // clear entity staging tables
                     var clear = this.tables.clearStagingTables(entity = arguments.entity);
-                  }
-                  else{
-                    var clear = {success: true};
                   }
 
                   // delete entity csv files
@@ -1597,7 +1583,6 @@ component accessors="true" extends="helper" {
         while (!fileIsEOF(conceptsData)){
           line = fileReadLine(conceptsData).deserializeJSON();
 
-
           if (inputs.data.keyExists("concepts")){
             if (!line.keyExists("description")){
               line.description = "";
@@ -2632,6 +2617,8 @@ component accessors="true" extends="helper" {
     ON (dest.id = src.id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.wikidata = src.wikidata,
             dest.display_name = src.display_name,
             dest.concept_level = src.concept_level,
@@ -2643,9 +2630,9 @@ component accessors="true" extends="helper" {
             dest.works_api_url=src.works_api_url,
             dest.updated_date=src.updated_date
     WHEN NOT MATCHED THEN
-        INSERT (id, wikidata, display_name, concept_level, description, works_count, cited_by_count,
+        INSERT (id, snapshotdate, snapshotfilenumber, wikidata, display_name, concept_level, description, works_count, cited_by_count,
           image_url, image_thumbnail_url, works_api_url, updated_date)
-        VALUES (src.id, src.wikidata, src.display_name, src.concept_level, src.description, src.works_count, src.cited_by_count,
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.wikidata, src.display_name, src.concept_level, src.description, src.works_count, src.cited_by_count,
         src.image_url, src.image_thumbnail_url, src.works_api_url, src.updated_date)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
@@ -2668,8 +2655,8 @@ component accessors="true" extends="helper" {
     USING #getSchema()#.stage$concepts_ancestors src
     ON (dest.concept_id = src.concept_id and dest.ancestor_id = src.ancestor_id)
     WHEN NOT MATCHED THEN
-        INSERT (concept_id, ancestor_id)
-        VALUES (src.concept_id, src.ancestor_id)",
+        INSERT (concept_id, ancestor_id,snapshotdate, snapshotfilenumber)
+        VALUES (src.concept_id, src.ancestor_id, src.snapshotdate, src.snapshotfilenumber)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2692,12 +2679,14 @@ component accessors="true" extends="helper" {
     ON (dest.concept_id = src.concept_id AND dest.year = src.year)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.works_count = src.works_count,
             dest.cited_by_count = src.cited_by_count,
             dest.oa_works_count = src.oa_works_count
     WHEN NOT MATCHED THEN
-        INSERT (concept_id, year, works_count, cited_by_count, oa_works_count)
-        VALUES (src.concept_id, src.year, src.works_count, src.cited_by_count, src.oa_works_count)",
+        INSERT (concept_id, year, snapshotdate, snapshotfilenumber, works_count, cited_by_count, oa_works_count)
+        VALUES (src.concept_id, src.year, src.snapshotdate, src.snapshotfilenumber, src.works_count, src.cited_by_count, src.oa_works_count)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2720,6 +2709,8 @@ component accessors="true" extends="helper" {
     ON (dest.concept_id = src.concept_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.openalex = src.openalex,
             dest.wikidata = src.wikidata,
             dest.wikipedia = src.wikipedia,
@@ -2727,8 +2718,8 @@ component accessors="true" extends="helper" {
             dest.umls_cui = src.umls_cui,
             dest.mag = src.mag
     WHEN NOT MATCHED THEN
-        INSERT (concept_id, openalex, wikidata, wikipedia, umls_aui, umls_cui, mag)
-        VALUES (src.concept_id, src.openalex, src.wikidata, src.wikipedia, src.umls_aui, src.umls_cui, src.mag)",
+        INSERT (concept_id, snapshotdate, snapshotfilenumber, openalex, wikidata, wikipedia, umls_aui, umls_cui, mag)
+        VALUES (src.concept_id, src.snapshotdate, src.snapshotfilenumber, src.openalex, src.wikidata, src.wikipedia, src.umls_aui, src.umls_cui, src.mag)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2751,10 +2742,12 @@ component accessors="true" extends="helper" {
     ON (dest.concept_id = src.concept_id AND dest.related_concept_id = src.related_concept_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.score = src.score
     WHEN NOT MATCHED THEN
-        INSERT (concept_id, related_concept_id, score)
-        VALUES (src.concept_id, src.related_concept_id, src.score)",
+        INSERT (concept_id, related_concept_id, snapshotdate, snapshotfilenumber, score)
+        VALUES (src.concept_id, src.related_concept_id, src.snapshotdate, src.snapshotfilenumber, src.score)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );

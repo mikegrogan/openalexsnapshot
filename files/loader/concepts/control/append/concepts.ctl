@@ -3,10 +3,12 @@ characterset utf8
 infile '.\csv\concepts.csv'
 BADFILE '.\logs\concepts.bad'
 DISCARDFILE '.\logs\concepts.dsc'
-truncate into table openalex.stage$concepts
+append into table openalex.concepts
 Fields terminated by '\t' trailing nullcols
 (
   ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   WIKIDATA,
   DISPLAY_NAME CHAR(1000),
   CONCEPT_LEVEL,

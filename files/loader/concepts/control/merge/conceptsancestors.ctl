@@ -7,5 +7,7 @@ truncate into table openalex.stage$concepts_ancestors
 Fields terminated by '\t' trailing nullcols
 (
   CONCEPT_ID,
-  ANCESTOR_ID
+  ANCESTOR_ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER
 )
