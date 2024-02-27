@@ -159,7 +159,8 @@ component accessors="true" {
     var importlist = this.tables.getActiveTableNamesList(arguments.entity);
     var importmode = this.tables.getEntityImportMode(arguments.entity);
 
-    outputH3("Starting #arguments.entity# csv import into the staging tables");
+    var tabletype = (importmode == "append") ? "main" : "staging";
+    outputH3("Starting #arguments.entity# csv import into the #tabletype# tables");
     flush;
 
     cfexecute(

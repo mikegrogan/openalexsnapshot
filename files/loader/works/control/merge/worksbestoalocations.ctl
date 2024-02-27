@@ -6,6 +6,7 @@ DISCARDFILE '.\logs\worksbestoalocations.dsc'
 truncate into table openalex.stage$works_best_oa_locations
 Fields terminated by '\t' trailing nullcols
 (
+  UNIQUE_ID,
   SNAPSHOTDATE Date "YYYY-MM-DD",
   SNAPSHOTFILENUMBER,
   WORK_ID,

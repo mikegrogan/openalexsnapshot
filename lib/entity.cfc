@@ -52,16 +52,16 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 2){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
 
-    // For append mode we don't know if the script terminates mid run currently.
-    // We have to clear out the data and start over
+    // For append mode we don't know if the script terminates mid run. Maybe there was an error with the sqlloader import, etc
+    // We have to clear out possible incomplete snapshot data and start over
     if (this.tables.getEntityImportMode(arguments.entity) == "append"){
       // clear entity main tables
-      var clear = this.tables.clearMainTables(entity = arguments.entity, latestSnapshot = filesToProcess.latest);
+      // var clear = this.tables.clearMainTablesPastSnapshot(entity = arguments.entity, latestSnapshot = filesToProcess.latest);
       // only call this if doing a full reset
       // clearEntityLogImport(entity = arguments.entity);
     }
@@ -74,7 +74,7 @@ component accessors="true" extends="helper" {
       if (filesToProcess.data.len() > 0){
         outputH2("Processing remaining #arguments.entity# snapshots");
         if (arguments.keyExists("snapshotlimit")){
-          outputNormal("Limiting snapshot processing to #arguments.snapshotLimit#");
+          outputImportant("Limiting snapshot processing to #arguments.snapshotLimit#");
         }
       }
       else{
@@ -160,7 +160,8 @@ component accessors="true" extends="helper" {
                       filename = snapshot.filename,
                       fileurl = snapshot.url,
                       totalfiles = snapshot.totalfiles,
-                      recordcount = snapshot.meta.record_count
+                      recordcount = snapshot.meta.record_count,
+                      manifesthash = filesToProcess.hash
                     );
                     result.success = true;
                   }
@@ -233,18 +234,32 @@ component accessors="true" extends="helper" {
     var compareDate = createDate(1900, 1, 1);
     var compareFileNumber = 0;
 
-    var latest = getLatestEntityFileSynced(entity = arguments.entity);
+    var latestSync = getLatestEntityFileSynced(entity = arguments.entity);
 
-    if (latest.recordcount == 1){
-      compareDate = latest.updateDate;
-      compareFileNumber = latest.filenumber;
-      outputNormal("Latest synced #arguments.entity# snapshot found is #dateFormat(compareDate, "yyyy-mm-dd")# &##10142; #latest.filename#");
+    if (latestSync.recordcount == 1){
+      // check hashes to see if manifest file changed
+      if (result.hash !== latestSync.manifesthash && this.tables.getEntityImportMode(arguments.entity) == "append"){
+        outputImportant("Change detected in the #arguments.entity# manifest file. Assuming OpenAlex data was refreshed. Starting import from the beginning. (append mode only)");
+      }
+      else{
+        compareDate = latestSync.updateDate;
+        compareFileNumber = latestSync.filenumber;
+        outputNormal("Latest synced #arguments.entity# snapshot found is #dateFormat(compareDate, "yyyy-mm-dd")# &##10142; #latestSync.filename#");
+      }
     }
     result.latest = {snapshotdate: compareDate, snapshotfile: compareFileNumber}
 
+    // append only: clear out records that need to be reset
+    // We don't know if the script terminates mid run. Maybe there was an error with the sqlloader import, etc
+    // We have to clear out possible incomplete snapshot data and start over
+    // Also, if the manifest file changes, we start over completely
+    if (this.tables.getEntityImportMode(arguments.entity) == "append"){
+      var clear = this.tables.clearMainTablesPastSnapshot(entity = arguments.entity, latestSnapshot = result.latest);
+    }
+
+    // filter on snapshots that need processing
     result.data = result.data.filter((row) => {
       var dateComparison = dateCompare(row.updateDate, compareDate, "d");
-
       return dateComparison == 1 || (dateComparison == 0 ? row.filenumber > compareFileNumber : false);
     });
 
@@ -252,11 +267,12 @@ component accessors="true" extends="helper" {
   }
 
   private any function getManifestFile(entity){
-    var result = {success: false, data: []};
+    var result = {success: false, hash: "", data: []};
 
     var manifestPath = application.localpath & "manifest/#arguments.entity#.json";
     if (fileExists(manifestPath)){
       var fileData = fileRead(manifestPath);
+      result.hash = hash(fileData, "MD5");
       fileData = fileData.deserializeJSON();
       result.success = true;
       result.entity = arguments.entity;
@@ -389,24 +405,27 @@ component accessors="true" extends="helper" {
             }
 
             // works
-            inputs.data.works.append(line.id);
-            inputs.data.works.append(arguments.snapshotMetaData.updateDate);
-            inputs.data.works.append(arguments.snapshotMetaData.filenumber);
-            inputs.data.works.append(line.doi);
-            inputs.data.works.append(line.title.reReplaceNoCase("[\n\r\t]", " ", "all"));
-            inputs.data.works.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
-            inputs.data.works.append(line.publication_year);
-            inputs.data.works.append(line.publication_date);
-            inputs.data.works.append(line.type);
-            inputs.data.works.append(line.cited_by_count);
-            (line.is_retracted) ? inputs.data.works.append("1") : inputs.data.works.append("0");
-            (line.is_paratext) ? inputs.data.works.append("1") : inputs.data.works.append("0");
-            inputs.data.works.append(line.cited_by_api_url);
-            // (line.abstract_inverted_index.isEmpty()) ? inputs.data.works.append("") : inputs.data.works.append(line.abstract_inverted_index.toJson());
-            inputs.data.works.append(line.language);
-            inputs.writer.works.write(inputs.data.works.toList(this.csvDelimiter));
-            inputs.writer.works.newLine();
-            inputs.data.works.clear();
+            if (inputs.data.keyExists("works")){
+              inputs.data.works.append(line.id);
+              inputs.data.works.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.works.append(arguments.snapshotMetaData.filenumber);
+              inputs.data.works.append(line.doi);
+              inputs.data.works.append(line.title.reReplaceNoCase("[\n\r\t]", " ", "all"));
+              inputs.data.works.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
+              inputs.data.works.append(line.publication_year);
+              inputs.data.works.append(line.publication_date);
+              inputs.data.works.append(line.type);
+              inputs.data.works.append(line.cited_by_count);
+              (line.is_retracted) ? inputs.data.works.append("1") : inputs.data.works.append("0");
+              (line.is_paratext) ? inputs.data.works.append("1") : inputs.data.works.append("0");
+              inputs.data.works.append(line.cited_by_api_url);
+              // (line.abstract_inverted_index.isEmpty()) ? inputs.data.works.append("") : inputs.data.works.append(line.abstract_inverted_index.toJson());
+              inputs.data.works.append(line.language);
+
+              inputs.writer.works.write(inputs.data.works.toList(this.csvDelimiter));
+              inputs.writer.works.newLine();
+              inputs.data.works.clear();
+            }
           }
 
           // authorships
@@ -459,6 +478,19 @@ component accessors="true" extends="helper" {
                 line.best_oa_location.source.id = "";
               }
 
+              // unfortunately source_id can be blank, as well as landing_page_url or pdf_url.
+              // if all 3 are blank, then there is no best_oa_location
+              // creating a hash of the possible primary fields, to hopefully make it unique
+              inputs.data.worksbestoalocations.append(
+                hash(
+                  line.id & line.best_oa_location.source.id & line.best_oa_location.landing_page_url & line.best_oa_location.pdf_url.reReplaceNoCase(
+                    "[\n\r\t]",
+                    " ",
+                    "all"
+                  ),
+                  "MD5"
+                )
+              );
               inputs.data.worksbestoalocations.append(arguments.snapshotMetaData.updateDate);
               inputs.data.worksbestoalocations.append(arguments.snapshotMetaData.filenumber);
               inputs.data.worksbestoalocations.append(line.id);
@@ -468,6 +500,7 @@ component accessors="true" extends="helper" {
               (line.best_oa_location.is_oa) ? inputs.data.worksbestoalocations.append("1") : inputs.data.worksbestoalocations.append("0");
               inputs.data.worksbestoalocations.append(line.best_oa_location.version);
               inputs.data.worksbestoalocations.append(line.best_oa_location.license);
+
               inputs.writer.worksbestoalocations.write(inputs.data.worksbestoalocations.toList(this.csvDelimiter));
               inputs.writer.worksbestoalocations.newLine();
               inputs.data.worksbestoalocations.clear();
@@ -498,6 +531,7 @@ component accessors="true" extends="helper" {
                 inputs.data.worksbiblio.append(line.biblio.issue.left(100));
                 inputs.data.worksbiblio.append(line.biblio.first_page.left(100));
                 inputs.data.worksbiblio.append(line.biblio.last_page.left(100));
+
                 inputs.writer.worksbiblio.write(inputs.data.worksbiblio.toList(this.csvDelimiter));
                 inputs.writer.worksbiblio.newLine();
                 inputs.data.worksbiblio.clear();
@@ -544,6 +578,7 @@ component accessors="true" extends="helper" {
               inputs.data.worksids.append(line.ids.mag);
               inputs.data.worksids.append(line.ids.pmid);
               inputs.data.worksids.append(line.ids.pmcid);
+
               inputs.writer.worksids.write(inputs.data.worksids.toList(this.csvDelimiter));
               inputs.writer.worksids.newLine();
               inputs.data.worksids.clear();
@@ -551,35 +586,50 @@ component accessors="true" extends="helper" {
           }
 
           // locations
-          // for (var location in line.locations){
-          //   if (!location.keyExists("source")){
-          //     location.source.id = "";
-          //   }
-          //   if (!location.keyExists("landing_page_url")){
-          //     location.landing_page_url = "";
-          //   }
-          //   if (!location.keyExists("pdf_url")){
-          //     location.pdf_url = "";
-          //   }
-          //   if (!location.keyExists("version")){
-          //     location.version = "";
-          //   }
-          //   if (!location.keyExists("license")){
-          //     location.license = "";
-          //   }
+          if (inputs.data.keyExists("workslocations")){
+            for (var location in line.locations){
+              if (!location.keyExists("source")){
+                location.source.id = "";
+              }
+              if (!location.keyExists("landing_page_url")){
+                location.landing_page_url = "";
+              }
+              if (!location.keyExists("pdf_url")){
+                location.pdf_url = "";
+              }
+              if (!location.keyExists("version")){
+                location.version = "";
+              }
+              if (!location.keyExists("license")){
+                location.license = "";
+              }
 
-          //   locationsArr.append(line.id);
-          //   locationsArr.append(location.source.id);
-          //   locationsArr.append(location.landing_page_url);
-          //   locationsArr.append(location.pdf_url);
-          //   (location.is_oa) ? locationsArr.append("1") : locationsArr.append("0");
-          //   locationsArr.append(location.version);
-          //   locationsArr.append(location.license);
+              // need every record unique and the data coming from OA isn't always
+              inputs.data.workslocations.append(
+                hash(
+                  line.id & location.source.id & location.landing_page_url & location.pdf_url.reReplaceNoCase(
+                    "[\n\r\t]",
+                    " ",
+                    "all"
+                  ) & location.is_oa & location.version & location.license,
+                  "MD5"
+                )
+              );
+              inputs.data.workslocations.append(line.id);
+              inputs.data.workslocations.append(location.source.id);
+              inputs.data.workslocations.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.workslocations.append(arguments.snapshotMetaData.filenumber);
+              inputs.data.workslocations.append(location.landing_page_url);
+              inputs.data.workslocations.append(location.pdf_url);
+              (location.is_oa) ? inputs.data.workslocations.append("1") : inputs.data.workslocations.append("0");
+              inputs.data.workslocations.append(location.version);
+              inputs.data.workslocations.append(location.license);
 
-          //   worksLocationsWriter.write(locationsArr.toList(this.csvDelimiter));
-          //   worksLocationsWriter.newLine();
-          //   locationsArr.clear();
-          // }
+              inputs.writer.workslocations.write(inputs.data.workslocations.toList(this.csvDelimiter));
+              inputs.writer.workslocations.newLine();
+              inputs.data.workslocations.clear();
+            }
+          }
 
           // mesh
           if (inputs.data.keyExists("worksmesh")){
@@ -597,6 +647,7 @@ component accessors="true" extends="helper" {
               inputs.data.worksmesh.append(mesh.qualifier_ui);
               inputs.data.worksmesh.append(mesh.qualifier_name);
               (mesh.is_major_topic) ? inputs.data.worksmesh.append("1") : inputs.data.worksmesh.append("0");
+
               inputs.writer.worksmesh.write(inputs.data.worksmesh.toList(this.csvDelimiter));
               inputs.writer.worksmesh.newLine();
               inputs.data.worksmesh.clear();
@@ -616,15 +667,61 @@ component accessors="true" extends="helper" {
               (line.open_access.is_oa) ? inputs.data.worksopenaccess.append("1") : inputs.data.worksopenaccess.append("0");
               inputs.data.worksopenaccess.append(line.open_access.oa_status);
               inputs.data.worksopenaccess.append(line.open_access.oa_url.reReplaceNoCase("[\n\r\t]", " ", "all"));
-              ;
               (line.open_access.any_repository_has_fulltext) ? inputs.data.worksopenaccess.append("1") : inputs.data.worksopenaccess.append("0");
+
               inputs.writer.worksopenaccess.write(inputs.data.worksopenaccess.toList(this.csvDelimiter));
               inputs.writer.worksopenaccess.newLine();
               inputs.data.worksopenaccess.clear();
             }
           }
 
-          // primary
+          // primary locations
+          if (inputs.data.keyExists("worksprimarylocations")){
+            if (line.keyExists("primary_location")){
+              if (!line.primary_location.keyExists("source")){
+                line.primary_location.source.id = "";
+              }
+              if (!line.primary_location.keyExists("landing_page_url")){
+                line.primary_location.landing_page_url = "";
+              }
+              if (!line.primary_location.keyExists("pdf_url")){
+                line.primary_location.pdf_url = "";
+              }
+              if (!line.primary_location.keyExists("version")){
+                line.primary_location.version = "";
+              }
+              if (!line.primary_location.keyExists("license")){
+                line.primary_location.license = "";
+              }
+
+              // unfortunately source_id can be blank, as well as landing_page_url or pdf_url.
+              // if all 3 are blank, then there is no best_oa_location
+              // creating a hash of the possible primary fields, to hopefully make it unique
+              inputs.data.worksprimarylocations.append(
+                hash(
+                  line.id & line.primary_location.source.id & line.primary_location.landing_page_url & line.primary_location.pdf_url.reReplaceNoCase(
+                    "[\n\r\t]",
+                    " ",
+                    "all"
+                  ),
+                  "MD5"
+                )
+              );
+              inputs.data.worksprimarylocations.append(line.id);
+              inputs.data.worksprimarylocations.append(line.primary_location.source.id);
+              inputs.data.worksprimarylocations.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.worksprimarylocations.append(arguments.snapshotMetaData.filenumber);
+              inputs.data.worksprimarylocations.append(line.primary_location.landing_page_url);
+              inputs.data.worksprimarylocations.append(line.primary_location.pdf_url.reReplaceNoCase("[\n\r\t]", " ", "all"));
+              (line.primary_location.is_oa) ? inputs.data.worksprimarylocations.append("1") : inputs.data.worksprimarylocations.append("0");
+              inputs.data.worksprimarylocations.append(line.primary_location.version);
+              inputs.data.worksprimarylocations.append(line.primary_location.license);
+
+              inputs.writer.worksprimarylocations.write(inputs.data.worksprimarylocations.toList(this.csvDelimiter));
+              inputs.writer.worksprimarylocations.newLine();
+              inputs.data.worksprimarylocations.clear();
+            }
+          }
 
           // referenced
           if (inputs.data.keyExists("worksreferencedworks")){
@@ -633,6 +730,7 @@ component accessors="true" extends="helper" {
               inputs.data.worksReferencedWorks.append(referenced_work_id);
               inputs.data.worksReferencedWorks.append(arguments.snapshotMetaData.updateDate);
               inputs.data.worksReferencedWorks.append(arguments.snapshotMetaData.filenumber);
+
               inputs.writer.worksReferencedWorks.write(inputs.data.worksReferencedWorks.toList(this.csvDelimiter));
               inputs.writer.worksReferencedWorks.newLine();
               inputs.data.worksReferencedWorks.clear();
@@ -646,6 +744,7 @@ component accessors="true" extends="helper" {
               inputs.data.worksRelatedWorks.append(related_work_id);
               inputs.data.worksRelatedWorks.append(arguments.snapshotMetaData.updateDate);
               inputs.data.worksRelatedWorks.append(arguments.snapshotMetaData.filenumber);
+
               inputs.writer.worksRelatedWorks.write(inputs.data.worksRelatedWorks.toList(this.csvDelimiter));
               inputs.writer.worksRelatedWorks.newLine();
               inputs.data.worksRelatedWorks.clear();
@@ -1703,7 +1802,7 @@ component accessors="true" extends="helper" {
         works_biblio: {success: false, recordcount: 0},
         works_concepts: {success: false, recordcount: 0},
         works_ids: {success: false, recordcount: 0},
-        works_location: {success: false, recordcount: 0},
+        works_locations: {success: false, recordcount: 0},
         works_mesh: {success: false, recordcount: 0},
         works_open_access: {success: false, recordcount: 0},
         works_primary_locations: {success: false, recordcount: 0},
@@ -1747,7 +1846,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works.success = true;
         result.data.works.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works.recordcount# staging works records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works.recordcount# staging works records with main");
         flush;
       }
       else{
@@ -1793,7 +1892,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_authorships.success = true;
         result.data.works_authorships.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_authorships.recordcount# staging works_authorships records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_authorships.recordcount# staging works_authorships records with main");
         flush;
       }
       else{
@@ -1817,15 +1916,15 @@ component accessors="true" extends="helper" {
             dest.version = src.version,
             dest.license = src.license
     WHEN NOT MATCHED THEN
-        INSERT (snapshotdate, snapshotfilenumber, work_id, source_id, landing_page_url, pdf_url, is_oa, version, license)
-        VALUES (src.snapshotdate, src.snapshotfilenumber, src.work_id, src.source_id, src.landing_page_url, src.pdf_url, src.is_oa, src.version, src.license)",
+        INSERT (unique_id,snapshotdate, snapshotfilenumber, work_id, source_id, landing_page_url, pdf_url, is_oa, version, license)
+        VALUES (src.unique_id,src.snapshotdate, src.snapshotfilenumber, src.work_id, src.source_id, src.landing_page_url, src.pdf_url, src.is_oa, src.version, src.license)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
       if (isStruct(qryresult)){
         result.data.works_best_oa_locations.success = true;
         result.data.works_best_oa_locations.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_best_oa_locations.recordcount# staging works_best_oa_locations records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_best_oa_locations.recordcount# staging works_best_oa_locations records with main");
         flush;
       }
       else{
@@ -1856,7 +1955,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_biblio.success = true;
         result.data.works_biblio.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_biblio.recordcount# staging works_biblio records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_biblio.recordcount# staging works_biblio records with main");
         flush;
       }
       else{
@@ -1882,7 +1981,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_concepts.success = true;
         result.data.works_concepts.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_concepts.recordcount# staging works_concepts records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_concepts.recordcount# staging works_concepts records with main");
         flush;
       }
       else{
@@ -1914,7 +2013,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_ids.success = true;
         result.data.works_ids.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_ids.recordcount# staging works_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_ids.recordcount# staging works_ids records with main");
         flush;
       }
       else{
@@ -1923,32 +2022,52 @@ component accessors="true" extends="helper" {
     }
 
     // locations
-    // queryExecute(
-    //   "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.works_locations dest
-    // USING #getSchema()#.stage$works_locations src
-    // ON (dest.work_id = src.work_id AND dest.source_id = src.source_id)
-    // WHEN MATCHED THEN
-    //     UPDATE SET
-    //         dest.landing_page_url = src.landing_page_url,
-    //         dest.pdf_url = src.pdf_url,
-    //         dest.is_oa = src.is_oa,
-    //         dest.version = src.version,
-    //         dest.license = src.license
-    // WHEN NOT MATCHED THEN
-    //     INSERT (work_id, source_id, landing_page_url, pdf_url, is_oa, version, license)
-    //     VALUES (src.work_id, src.source_id, src.landing_page_url, src.pdf_url, src.is_oa, src.version, src.license)",
-    //   {},
-    //   {datasource: getDatasource(), result: "qryresult"}
-    // );
-    // if (isStruct(qryresult)){
-    //   result.data.works_locations.success = true;
-    //   result.data.works_locations.recordcount = qryresult.recordcount;
-    // outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_location.recordcount# staging works_location records with production");
 
-    // }
-    // else{
-    //   result.success = false;
-    // }
+    // I realize i'm filtering out additional records with this query
+    // The data doesn't really have a great primary key
+    // In order to not reduce the load time anymore I'm filtering on work_id and source_id
+    // Loading via the append mode would result in the full location dataset if this data is important
+    if (activeTables.listFind("workslocations")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.works_locations dest
+    USING (
+      SELECT UNIQUE_ID,WORK_ID,SOURCE_ID,SNAPSHOTDATE,SNAPSHOTFILENUMBER,LANDING_PAGE_URL,
+      PDF_URL,IS_OA,VERSION,LICENSE
+        FROM (
+            SELECT UNIQUE_ID,WORK_ID,SOURCE_ID,SNAPSHOTDATE,SNAPSHOTFILENUMBER,LANDING_PAGE_URL,
+            PDF_URL,IS_OA,VERSION,LICENSE,
+            ROW_NUMBER() OVER (PARTITION BY WORK_ID,SOURCE_ID ORDER BY work_id) AS rn
+            FROM #getSchema()#.STAGE$WORKS_LOCATIONS
+        ) 
+        WHERE rn = 1
+    ) src
+    ON (dest.work_id = src.work_id AND dest.source_id = src.source_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
+            dest.landing_page_url = src.landing_page_url,
+            dest.pdf_url = src.pdf_url,
+            dest.is_oa = src.is_oa,
+            dest.version = src.version,
+            dest.license = src.license
+    WHEN NOT MATCHED THEN
+        INSERT (unique_id,snapshotdate, snapshotfilenumber, work_id, source_id, landing_page_url, pdf_url, is_oa, version, license)
+        VALUES (src.unique_id,src.snapshotdate, src.snapshotfilenumber, src.work_id, src.source_id, src.landing_page_url, src.pdf_url, 
+          src.is_oa, src.version, src.license)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.works_locations.success = true;
+        result.data.works_locations.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_locations.recordcount# staging works_location records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
 
     // mesh
     if (activeTables.listFind("worksmesh")){
@@ -1974,7 +2093,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_mesh.success = true;
         result.data.works_mesh.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_mesh.recordcount# staging works_mesh records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_mesh.recordcount# staging works_mesh records with main");
         flush;
       }
       else{
@@ -2005,7 +2124,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_open_access.success = true;
         result.data.works_open_access.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_open_access.recordcount# staging works_open_access records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_open_access.recordcount# staging works_open_access records with main");
         flush;
       }
       else{
@@ -2013,7 +2132,38 @@ component accessors="true" extends="helper" {
       }
     }
 
-    // primary
+    // primary locations
+    if (activeTables.listFind("worksprimarylocations")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.works_primary_locations dest
+    USING #getSchema()#.stage$works_primary_locations src
+    ON (dest.work_id = src.work_id AND dest.source_id = src.source_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
+            dest.landing_page_url = src.landing_page_url,
+            dest.pdf_url = src.pdf_url,
+            dest.is_oa = src.is_oa,
+            dest.version = src.version,
+            dest.license = src.license
+    WHEN NOT MATCHED THEN
+        INSERT (unique_id,snapshotdate, snapshotfilenumber, work_id, source_id, landing_page_url, pdf_url, is_oa, version, license)
+        VALUES (src.unique_id,src.snapshotdate, src.snapshotfilenumber, src.work_id, src.source_id, src.landing_page_url, src.pdf_url, 
+          src.is_oa, src.version, src.license)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.works_primary_locations.success = true;
+        result.data.works_primary_locations.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_primary_locations.recordcount# staging works_location records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
 
     // referenced
     if (activeTables.listFind("worksreferencedworks")){
@@ -2030,7 +2180,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_referenced_works.success = true;
         result.data.works_referenced_works.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_referenced_works.recordcount# staging works_referenced_works records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_referenced_works.recordcount# staging works_referenced_works records with main");
         flush;
       }
       else{
@@ -2053,7 +2203,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.works_related_works.success = true;
         result.data.works_related_works.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_related_works.recordcount# staging works_related_works records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_related_works.recordcount# staging works_related_works records with main");
         flush;
       }
       else{
@@ -2888,7 +3038,8 @@ component accessors="true" extends="helper" {
     required filename,
     required fileurl,
     required totalfiles,
-    required recordcount
+    required recordcount,
+    required manifesthash
   ){
     var result = {success: false};
 
@@ -2905,10 +3056,11 @@ component accessors="true" extends="helper" {
             dest.fileurl=:fileurl,
             dest.totalfiles=:totalfiles,
             dest.recordcount=:recordcount,
+            dest.manifesthash=:manifesthash,
             dest.createdat=current_timestamp
     WHEN NOT MATCHED THEN
-        INSERT (entity, updatedate,filenumber,filename,fileurl,totalfiles,recordcount)
-        VALUES (:entity,:updatedate,:filenumber,:filename,:fileurl,:totalfiles,:recordcount)
+        INSERT (entity, updatedate,filenumber,filename,fileurl,totalfiles,recordcount,manifesthash)
+        VALUES (:entity,:updatedate,:filenumber,:filename,:fileurl,:totalfiles,:recordcount,:manifesthash)
     ",
       {
         entity: {value: arguments.entity, cfsqltype: "varchar"},
@@ -2917,7 +3069,8 @@ component accessors="true" extends="helper" {
         filename: {value: arguments.filename, cfsqltype: "varchar"},
         fileurl: {value: arguments.fileurl, cfsqltype: "varchar"},
         totalfiles: {value: arguments.totalfiles, cfsqltype: "numeric"},
-        recordcount: {value: arguments.recordcount, cfsqltype: "numeric"}
+        recordcount: {value: arguments.recordcount, cfsqltype: "numeric"},
+        manifesthash: {value: arguments.manifesthash, cfsqltype: "varchar"}
       },
       {datasource: getDatasource(), result: "qryresult"}
     );

@@ -89,6 +89,7 @@ CREATE TABLE openalex.entitylatestsync (
     fileurl VARCHAR2(255),
     totalfiles NUMBER,
     recordcount NUMBER,
+    manifesthash VARCHAR2(50),
     createdat TIMESTAMP default CURRENT_TIMESTAMP,
     primary key (entity)
 );
@@ -114,7 +115,7 @@ CREATE TABLE openalex.authors (
     snapshotfilenumber NUMBER,
     orcid VARCHAR2(50),
     display_name NVARCHAR2(1000),
-    display_name_alternatives NCLOB CHECK (display_name_alternatives IS JSON),
+    display_name_alternatives NCLOB, --CHECK (display_name_alternatives IS JSON)
     works_count NUMBER,
     cited_by_count NUMBER,
     last_known_institution VARCHAR2(50),
@@ -228,8 +229,8 @@ CREATE TABLE openalex.concepts_ids (
     openalex VARCHAR2(50),
     wikidata VARCHAR2(50),
     wikipedia VARCHAR2(3000),
-    umls_aui CLOB CHECK (umls_aui IS JSON),
-    umls_cui CLOB CHECK (umls_cui IS JSON),
+    umls_aui CLOB, --CHECK (umls_aui IS JSON)
+    umls_cui CLOB, --CHECK (umls_cui IS JSON)
     mag NUMBER
 );
 
@@ -254,7 +255,7 @@ CREATE TABLE openalex.funders (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1500),
-    alternate_titles NCLOB CHECK (alternate_titles IS JSON),
+    alternate_titles NCLOB, --CHECK (alternate_titles IS JSON)
     country_code VARCHAR2(50),
     description NVARCHAR2(500),
     homepage_url VARCHAR2(1000),
@@ -307,8 +308,8 @@ CREATE TABLE openalex.institutions (
     homepage_url VARCHAR2(1000),
     image_url VARCHAR2(1000),
     image_thumbnail_url VARCHAR2(1000),
-    display_name_acronyms CLOB CHECK (display_name_acronyms IS JSON),
-    display_name_alternatives NCLOB CHECK (display_name_alternatives IS JSON),
+    display_name_acronyms CLOB, --CHECK (display_name_acronyms IS JSON)
+    display_name_alternatives NCLOB, --CHECK (display_name_alternatives IS JSON)
     works_count NUMBER,
     cited_by_count NUMBER,
     works_api_url VARCHAR2(200),
@@ -380,8 +381,8 @@ CREATE TABLE openalex.publishers (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1000),
-    alternate_titles NCLOB CHECK (alternate_titles IS JSON),
-    country_codes CLOB CHECK (country_codes IS JSON),
+    alternate_titles NCLOB, --CHECK (alternate_titles IS JSON)
+    country_codes CLOB, --CHECK (country_codes IS JSON)
     hierarchy_level NUMBER,
     parent_publisher VARCHAR2(50),
     homepage_url VARCHAR2(1000),
@@ -427,7 +428,7 @@ CREATE TABLE openalex.sources (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     issn_l VARCHAR2(50),
-    issn CLOB CHECK (issn IS JSON),
+    issn CLOB, --CHECK (issn IS JSON)
     display_name NVARCHAR2(1500),
     publisher VARCHAR2(50),
     works_count NUMBER,
@@ -462,7 +463,7 @@ CREATE TABLE openalex.sources_ids (
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
     issn_l VARCHAR2(50),
-    issn CLOB CHECK (issn IS JSON),
+    issn CLOB, --CHECK (issn IS JSON)
     mag NUMBER,
     wikidata VARCHAR2(50),
     fatcat VARCHAR2(100)
@@ -520,17 +521,20 @@ SELECT * FROM OPENALEX.works WHERE 1 = 0;
 -- ALTER TABLE openalex.works
 -- MODIFY PARTITION BY HASH(id) PARTITIONS 8;
 
+-- unfortunately source_id can be blank, as well as landing_page_url or pdf_url
+-- so creating a unique_id to make it simpler
 CREATE TABLE openalex.works_primary_locations (
+    unique_id VARCHAR2(40),
     work_id VARCHAR2(50),
     source_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     landing_page_url VARCHAR2(1000),
-    pdf_url VARCHAR2(1000),
+    pdf_url VARCHAR2(3000),
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),
-    primary key (work_id,source_id)
+    primary key (unique_id)
 );
 
 -- ALTER TABLE openalex.works_primary_locations
@@ -539,17 +543,20 @@ CREATE TABLE openalex.works_primary_locations (
 CREATE TABLE OPENALEX.stage$works_primary_locations AS
 SELECT * FROM OPENALEX.works_primary_locations WHERE 1 = 0;
 
+-- unfortunately source_id can be blank, as well as landing_page_url or pdf_url
+-- so creating a unique_id to make it simpler
 CREATE TABLE openalex.works_locations (
+    unique_id VARCHAR2(40),
     work_id VARCHAR2(50),
     source_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     landing_page_url VARCHAR2(1000),
-    pdf_url VARCHAR2(1000),
+    pdf_url VARCHAR2(3000),
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),
-    primary key (work_id,source_id)
+    primary key (unique_id)
 );
 
 -- ALTER TABLE openalex.works_locations
@@ -558,8 +565,11 @@ CREATE TABLE openalex.works_locations (
 CREATE TABLE OPENALEX.stage$works_locations AS
 SELECT * FROM OPENALEX.works_locations WHERE 1 = 0;
 
+-- unfortunately source_id can be blank, as well as landing_page_url or pdf_url. 
+-- if all 3 are blank, then there is no best_oa_location
+-- so creating a unique_id to make it simpler
 CREATE TABLE openalex.works_best_oa_locations (
-    unique_id raw(16) default sys_guid(),
+    unique_id VARCHAR2(40),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     work_id VARCHAR2(50),
@@ -568,9 +578,7 @@ CREATE TABLE openalex.works_best_oa_locations (
     pdf_url VARCHAR2(3000),
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
-    license VARCHAR2(50),
-    -- unfortunately source_id can be blank, as well as landing_page_url or pdf_url
-    -- so creating a unique_id to make it simpler
+    license VARCHAR2(50),    
     primary key (unique_id)
 );
 

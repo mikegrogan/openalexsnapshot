@@ -1,9 +1,9 @@
 load data 
 characterset utf8
-infile '.\csv\workslocations.csv'
-BADFILE '.\logs\workslocations.bad'
-DISCARDFILE '.\logs\workslocations.dsc'
-append into table openalex.works_locations
+infile '.\csv\worksprimarylocations.csv'
+BADFILE '.\logs\worksprimarylocations.bad'
+DISCARDFILE '.\logs\worksprimarylocations.dsc'
+append into table openalex.works_primary_locations
 Fields terminated by '\t' trailing nullcols
 (
   UNIQUE_ID,

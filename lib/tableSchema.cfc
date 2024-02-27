@@ -19,7 +19,7 @@ component accessors="true" extends="helper" {
           },
           {
             name: "authors_affiliations",
-            id: "author_id,institution_id,year,snapshotdate,snapshotfilenumber",
+            id: "author_id",
             fields: "author_id,institution_id,year",
             active: true
           },
@@ -189,67 +189,67 @@ component accessors="true" extends="helper" {
             name: "works_authorships",
             id: "work_id",
             fields: "work_id,author_id,snapshotdate,snapshotfilenumber,author_positionraw_author_name,institution_id,raw_affiliation_string",
-            active: true
+            active: false
           },
           {
             name: "works_best_oa_locations",
             id: "work_id",
-            fields: "snapshotdate,snapshotfilenumber,work_id,source_id,landing_page_url,pdf_url,is_oa,version,license",
+            fields: "unique_id,snapshotdate,snapshotfilenumber,work_id,source_id,landing_page_url,pdf_url,is_oa,version,license",
             active: true
           },
           {
             name: "works_biblio",
             id: "work_id",
             fields: "work_id,snapshotdate,snapshotfilenumber,volume,issue,first_page,last_page",
-            active: true
+            active: false
           },
           {
             name: "works_concepts",
             id: "work_id",
             fields: "work_id,concept_id,snapshotdate,snapshotfilenumber,score",
-            active: true
+            active: false
           },
           {
             name: "works_ids",
             id: "work_id",
             fields: "work_id,snapshotdate,snapshotfilenumber,openalex,doi,mag,pmid,pmcid",
-            active: true
+            active: false
           },
           {
             name: "works_locations",
             id: "work_id",
-            fields: "work_id,source_id,snapshotdate,snapshotfilenumber,landing_page_url,pdf_url,is_oa,version,license",
+            fields: "unique_id,work_id,source_id,snapshotdate,snapshotfilenumber,landing_page_url,pdf_url,is_oa,version,license",
             active: true
           },
           {
             name: "works_mesh",
             id: "work_id",
             fields: "work_id,merge_id,snapshotdate,snapshotfilenumber,descriptor_ui,descriptor_name,qualifier_ui,qualifier_name,is_major_topic",
-            active: true
+            active: false
           },
           {
             name: "works_open_access",
             id: "work_id",
             fields: "work_id,snapshotdate,snapshotfilenumber,is_oa,oa_status,oa_url,any_repository_has_fulltext",
-            active: true
+            active: false
           },
           {
             name: "works_primary_locations",
             id: "work_id",
-            fields: "work_id,source_id,snapshotdate,snapshotfilenumber,landing_page_url,pdf_url,is_oa,version,license",
-            active: false
+            fields: "unique_id,work_id,source_id,snapshotdate,snapshotfilenumber,landing_page_url,pdf_url,is_oa,version,license",
+            active: true
           },
           {
             name: "works_referenced_works",
             id: "work_id",
             fields: "work_id,referenced_work_id,snapshotdate,snapshotfilenumber",
-            active: true
+            active: false
           },
           {
             name: "works_related_works",
             id: "work_id",
             fields: "work_id,related_work_id,snapshotdate,snapshotfilenumber",
-            active: true
+            active: false
           }
         ],
         importmode: "append"
@@ -281,9 +281,10 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  public function clearMainTables(entity, latestSnapshot){
+  public function clearMainTablesPastSnapshot(entity, latestSnapshot) hint="Only applies to append mode"{
     var result = {success: true};
 
+    outputH2("Checking and deleting any #arguments.entity# table records beyond sync snapshot (append mode only)");
     for (var table in getActiveTables(arguments.entity)){
       var test = queryExecute(
         "delete FROM #this.getSchema()#.#table.name#

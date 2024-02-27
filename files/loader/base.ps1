@@ -41,6 +41,7 @@ foreach ($item in $importlistArr) {
     $controlfile="control\$importmode\$item.ctl"    
         
     if ($importMode -eq "append") {
+        # $parallel = "true"
         $parallel = "true"
     } else{
         $parallel = "false"
