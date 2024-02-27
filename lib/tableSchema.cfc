@@ -71,7 +71,7 @@ component accessors="true" extends="helper" {
             active: true
           }
         ],
-        importmode: "append"
+        importmode: "merge"
       },
       funders: {
         fields: [

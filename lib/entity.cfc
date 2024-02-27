@@ -2785,6 +2785,8 @@ component accessors="true" extends="helper" {
     ON (dest.id = src.id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.display_name = src.display_name,
             dest.alternate_titles = src.alternate_titles,
             dest.country_code = src.country_code,
@@ -2797,9 +2799,9 @@ component accessors="true" extends="helper" {
             dest.cited_by_count=src.cited_by_count,
             dest.updated_date=src.updated_date
     WHEN NOT MATCHED THEN
-        INSERT (id, display_name, alternate_titles, country_code, description, homepage_url, image_url,
+        INSERT (id, snapshotdate, snapshotfilenumber, display_name, alternate_titles, country_code, description, homepage_url, image_url,
           image_thumbnail_url,grants_count, works_count, cited_by_count, updated_date)
-        VALUES (src.id, src.display_name, src.alternate_titles, src.country_code, src.description, src.homepage_url, src.image_url,
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.display_name, src.alternate_titles, src.country_code, src.description, src.homepage_url, src.image_url,
           src.image_thumbnail_url, src.grants_count, src.works_count, src.cited_by_count, src.updated_date)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
@@ -2823,11 +2825,13 @@ component accessors="true" extends="helper" {
     ON (dest.funder_id = src.funder_id AND dest.year = src.year)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.works_count = src.works_count,
             dest.cited_by_count = src.cited_by_count
     WHEN NOT MATCHED THEN
-        INSERT (funder_id, year, works_count, cited_by_count)
-        VALUES (src.funder_id, src.year, src.works_count, src.cited_by_count)",
+        INSERT (funder_id, year, snapshotdate, snapshotfilenumber, works_count, cited_by_count)
+        VALUES (src.funder_id, src.year, src.snapshotdate, src.snapshotfilenumber, src.works_count, src.cited_by_count)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2850,14 +2854,16 @@ component accessors="true" extends="helper" {
     ON (dest.funder_id = src.funder_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.openalex = src.openalex,
             dest.ror = src.ror,
             dest.wikidata = src.wikidata,
             dest.crossref = src.crossref,
             dest.doi = src.doi
     WHEN NOT MATCHED THEN
-        INSERT (funder_id, openalex, ror, wikidata, crossref, doi)
-        VALUES (src.funder_id, src.openalex, src.ror, src.wikidata, src.crossref, src.doi)",
+        INSERT (funder_id, snapshotdate, snapshotfilenumber, openalex, ror, wikidata, crossref, doi)
+        VALUES (src.funder_id, src.snapshotdate, src.snapshotfilenumber, src.openalex, src.ror, src.wikidata, src.crossref, src.doi)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );

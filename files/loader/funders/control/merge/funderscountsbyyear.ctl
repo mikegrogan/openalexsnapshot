@@ -8,6 +8,8 @@ Fields terminated by '\t' trailing nullcols
 (
   FUNDER_ID,
   YEAR,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   WORKS_COUNT,
   CITED_BY_COUNT
 )

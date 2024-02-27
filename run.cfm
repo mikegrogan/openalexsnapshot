@@ -2,8 +2,8 @@
 api = new OpenAlexClient();
 api.main(
   syncAuthors = false,
-  syncConcepts = true,
-  syncFunders = false,
+  syncConcepts = false,
+  syncFunders = true,
   syncInstitutions = false,
   syncPublishers = false,
   syncSources = false,
