@@ -7,6 +7,8 @@ truncate into table openalex.stage$institutions_geo
 Fields terminated by '\t' trailing nullcols
 (
   INSTITUTION_ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   CITY,
   GEONAMES_CITY_ID,
   REGION,

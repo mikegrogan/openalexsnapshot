@@ -8,5 +8,7 @@ Fields terminated by '\t' trailing nullcols
 (
   INSTITUTION_ID,
   ASSOCIATED_INSTITUTION_ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   RELATIONSHIP
 )

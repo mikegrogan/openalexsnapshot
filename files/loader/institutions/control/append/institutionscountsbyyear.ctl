@@ -1,0 +1,16 @@
+load data 
+characterset utf8
+infile '.\csv\institutionscountsbyyear.csv'
+BADFILE '.\logs\institutionscountsbyyear.bad'
+DISCARDFILE '.\logs\institutionscountsbyyear.dsc'
+append into table openalex.institutions_counts_by_year
+Fields terminated by '\t' trailing nullcols
+(
+  INSTITUTION_ID,
+  YEAR,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
+  WORKS_COUNT,
+  CITED_BY_COUNT,
+  OA_WORKS_COUNT
+)

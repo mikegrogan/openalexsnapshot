@@ -1771,7 +1771,6 @@ component accessors="true" extends="helper" {
       case "works":
         result = mergeWorksStageWithMain(parallel);
         break;
-      default:
     }
 
     return result;
@@ -2241,7 +2240,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.sources.success = true;
         result.data.sources.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources.recordcount# staging sources records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources.recordcount# staging sources records with main");
         flush;
       }
       else{
@@ -2269,7 +2268,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.sources_counts_by_year.success = true;
         result.data.sources_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources_counts_by_year.recordcount# staging sources_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources_counts_by_year.recordcount# staging sources_counts_by_year records with main");
         flush;
       }
       else{
@@ -2300,7 +2299,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.sources_ids.success = true;
         result.data.sources_ids.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources_ids.recordcount# staging sources_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.sources_ids.recordcount# staging sources_ids records with main");
         flush;
       }
       else{
@@ -2354,7 +2353,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.publishers.success = true;
         result.data.publishers.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers.recordcount# staging publishers records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers.recordcount# staging publishers records with main");
         flush;
       }
       else{
@@ -2382,7 +2381,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.publishers_counts_by_year.success = true;
         result.data.publishers_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers_counts_by_year.recordcount# staging publishers_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers_counts_by_year.recordcount# staging publishers_counts_by_year records with main");
         flush;
       }
       else{
@@ -2410,7 +2409,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.publishers_ids.success = true;
         result.data.publishers_ids.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers_ids.recordcount# staging publishers_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.publishers_ids.recordcount# staging publishers_ids records with main");
         flush;
       }
       else{
@@ -2439,35 +2438,37 @@ component accessors="true" extends="helper" {
     if (activeTables.listFind("institutions")){
       queryExecute(
         "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.institutions dest
-    USING #getSchema()#.stage$institutions src
-    ON (dest.id = src.id)
-    WHEN MATCHED THEN
+        USING #getSchema()#.stage$institutions src
+        ON (dest.id = src.id)
+        WHEN MATCHED THEN
         UPDATE SET
-            dest.ror = src.ror,
-            dest.display_name = src.display_name,
-            dest.country_code = src.country_code,
-            dest.type = src.type,
-            dest.homepage_url=src.homepage_url,
-            dest.image_url=src.image_url,
-            dest.image_thumbnail_url=src.image_thumbnail_url,
-            dest.display_name_acronyms=src.display_name_acronyms,
-            dest.display_name_alternatives=src.display_name_alternatives,
-            dest.works_count=src.works_count,
-            dest.cited_by_count=src.cited_by_count,
-            dest.works_api_url=src.works_api_url,
-            dest.updated_date=src.updated_date
-    WHEN NOT MATCHED THEN
-        INSERT (id, ror, display_name, country_code, type, homepage_url, image_url, image_thumbnail_url, 
-        display_name_acronyms,display_name_alternatives, works_count, cited_by_count, works_api_url, updated_date)
-        VALUES (src.id, src.ror, src.display_name, src.country_code, src.type, src.homepage_url, src.image_url, src.image_thumbnail_url, 
-        src.display_name_acronyms, src.display_name_alternatives, src.works_count, src.cited_by_count, src.works_api_url, src.updated_date)",
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.ror = src.ror,
+          dest.display_name = src.display_name,
+          dest.country_code = src.country_code,
+          dest.type = src.type,
+          dest.homepage_url=src.homepage_url,
+          dest.image_url=src.image_url,
+          dest.image_thumbnail_url=src.image_thumbnail_url,
+          dest.display_name_acronyms=src.display_name_acronyms,
+          dest.display_name_alternatives=src.display_name_alternatives,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.works_api_url=src.works_api_url,
+          dest.updated_date=src.updated_date
+        WHEN NOT MATCHED THEN
+          INSERT (id, snapshotdate, snapshotfilenumber, ror, display_name, country_code, type, homepage_url, image_url, image_thumbnail_url, 
+          display_name_acronyms,display_name_alternatives, works_count, cited_by_count, works_api_url, updated_date)
+          VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.ror, src.display_name, src.country_code, src.type, src.homepage_url, src.image_url, src.image_thumbnail_url, 
+          src.display_name_acronyms, src.display_name_alternatives, src.works_count, src.cited_by_count, src.works_api_url, src.updated_date)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
       if (isStruct(qryresult)){
         result.data.institutions.success = true;
         result.data.institutions.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions.recordcount# staging institutions records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions.recordcount# staging institutions records with main");
         flush;
       }
       else{
@@ -2483,17 +2484,19 @@ component accessors="true" extends="helper" {
     ON (dest.institution_id = src.institution_id AND dest.associated_institution_id = src.associated_institution_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.relationship = src.relationship            
     WHEN NOT MATCHED THEN
-        INSERT (institution_id, associated_institution_id, relationship)
-        VALUES (src.institution_id, src.associated_institution_id, src.relationship)",
+        INSERT (institution_id, associated_institution_id, snapshotdate, snapshotfilenumber, relationship)
+        VALUES (src.institution_id, src.associated_institution_id, src.snapshotdate, src.snapshotfilenumber, src.relationship)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
       if (isStruct(qryresult)){
         result.data.institutions_associated_institutions.success = true;
         result.data.institutions_associated_institutions.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_associated_institutions.recordcount# staging institutions_associated_institutions records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_associated_institutions.recordcount# staging institutions_associated_institutions records with main");
         flush;
       }
       else{
@@ -2509,19 +2512,21 @@ component accessors="true" extends="helper" {
     ON (dest.institution_id = src.institution_id AND dest.year = src.year)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.works_count = src.works_count,
             dest.cited_by_count = src.cited_by_count,
             dest.oa_works_count = src.oa_works_count
     WHEN NOT MATCHED THEN
-        INSERT (institution_id, year, works_count, cited_by_count, oa_works_count)
-        VALUES (src.institution_id, src.year, src.works_count, src.cited_by_count, src.oa_works_count)",
+        INSERT (institution_id, year, snapshotdate, snapshotfilenumber, works_count, cited_by_count, oa_works_count)
+        VALUES (src.institution_id, src.year, src.snapshotdate, src.snapshotfilenumber, src.works_count, src.cited_by_count, src.oa_works_count)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
       if (isStruct(qryresult)){
         result.data.institutions_counts_by_year.success = true;
         result.data.institutions_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_counts_by_year.recordcount# staging institutions_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_counts_by_year.recordcount# staging institutions_counts_by_year records with main");
         flush;
       }
       else{
@@ -2537,6 +2542,8 @@ component accessors="true" extends="helper" {
     ON (dest.institution_id = src.institution_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.city = src.city,
             dest.geonames_city_id = src.geonames_city_id,
             dest.region = src.region,
@@ -2545,15 +2552,15 @@ component accessors="true" extends="helper" {
             dest.latitude = src.latitude,
             dest.longitude = src.longitude
     WHEN NOT MATCHED THEN
-        INSERT (institution_id, city, geonames_city_id, region, country_code, country, latitude, longitude)
-        VALUES (src.institution_id, src.city, src.geonames_city_id, src.region, src.country_code, src.country, src.latitude, src.longitude)",
+        INSERT (institution_id, snapshotdate, snapshotfilenumber, city, geonames_city_id, region, country_code, country, latitude, longitude)
+        VALUES (src.institution_id, src.snapshotdate, src.snapshotfilenumber, src.city, src.geonames_city_id, src.region, src.country_code, src.country, src.latitude, src.longitude)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
       if (isStruct(qryresult)){
         result.data.institutions_geo.success = true;
         result.data.institutions_geo.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_geo.recordcount# staging institutions_geo records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_geo.recordcount# staging institutions_geo records with main");
         flush;
       }
       else{
@@ -2569,6 +2576,8 @@ component accessors="true" extends="helper" {
     ON (dest.institution_id = src.institution_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.openalex = src.openalex,
             dest.ror = src.ror,
             dest.grid = src.grid,
@@ -2576,15 +2585,15 @@ component accessors="true" extends="helper" {
             dest.wikidata = src.wikidata,
             dest.mag = src.mag
     WHEN NOT MATCHED THEN
-        INSERT (institution_id, openalex, ror, grid, wikipedia, wikidata, mag)
-        VALUES (src.institution_id, src.openalex, src.ror, src.grid, src.wikipedia, src.wikidata, src.mag)",
+        INSERT (institution_id, snapshotdate, snapshotfilenumber, openalex, ror, grid, wikipedia, wikidata, mag)
+        VALUES (src.institution_id, src.snapshotdate, src.snapshotfilenumber, src.openalex, src.ror, src.grid, src.wikipedia, src.wikidata, src.mag)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
       if (isStruct(qryresult)){
         result.data.institutions_ids.success = true;
         result.data.institutions_ids.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_ids.recordcount# staging institutions_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.institutions_ids.recordcount# staging institutions_ids records with main");
         flush;
       }
       else{
@@ -2640,7 +2649,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts.success = true;
         result.data.concepts.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts.recordcount# staging concepts records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts.recordcount# staging concepts records with main");
         flush;
       }
       else{
@@ -2663,7 +2672,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_ancestors.success = true;
         result.data.concepts_ancestors.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_ancestors.recordcount# staging concepts_ancestors records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_ancestors.recordcount# staging concepts_ancestors records with main");
         flush;
       }
       else{
@@ -2693,7 +2702,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_counts_by_year.success = true;
         result.data.concepts_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_counts_by_year.recordcount# staging concepts_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_counts_by_year.recordcount# staging concepts_counts_by_year records with main");
         flush;
       }
       else{
@@ -2726,7 +2735,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_ids.success = true;
         result.data.concepts_ids.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_ids.recordcount# staging concepts_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_ids.recordcount# staging concepts_ids records with main");
         flush;
       }
       else{
@@ -2754,7 +2763,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.concepts_related_concepts.success = true;
         result.data.concepts_related_concepts.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_related_concepts.recordcount# staging concepts_related_concepts records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_related_concepts.recordcount# staging concepts_related_concepts records with main");
         flush;
       }
       else{
@@ -2809,7 +2818,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.funders.success = true;
         result.data.funders.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders.recordcount# staging funders records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders.recordcount# staging funders records with main");
         flush;
       }
       else{
@@ -2838,7 +2847,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.funders_counts_by_year.success = true;
         result.data.funders_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders_counts_by_year.recordcount# staging funders_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders_counts_by_year.recordcount# staging funders_counts_by_year records with main");
         flush;
       }
       else{
@@ -2870,7 +2879,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.funders_ids.success = true;
         result.data.funders_ids.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders_ids.recordcount# staging funders_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.funders_ids.recordcount# staging funders_ids records with main");
         flush;
       }
       else{
@@ -2921,7 +2930,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authors.success = true;
         result.data.authors.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors.recordcount# staging authors records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors.recordcount# staging authors records with main");
         flush;
       }
       else{
@@ -2944,7 +2953,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authorsaffiliations.success = true;
         result.data.authorsaffiliations.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authorsaffiliations.recordcount# staging authorsaffiliations records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authorsaffiliations.recordcount# staging authorsaffiliations records with main");
         flush;
       }
       else{
@@ -2972,7 +2981,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authors_counts_by_year.success = true;
         result.data.authors_counts_by_year.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors_counts_by_year.recordcount# staging authors_counts_by_year records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors_counts_by_year.recordcount# staging authors_counts_by_year records with main");
         flush;
       }
       else{
@@ -3003,7 +3012,7 @@ component accessors="true" extends="helper" {
       if (isStruct(qryresult)){
         result.data.authors_ids.success = true;
         result.data.authors_ids.recordcount = qryresult.recordcount;
-        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors_ids.recordcount# staging authors_ids records with production");
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors_ids.recordcount# staging authors_ids records with main");
         flush;
       }
       else{

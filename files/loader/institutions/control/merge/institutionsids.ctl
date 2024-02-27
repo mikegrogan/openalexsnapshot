@@ -7,6 +7,8 @@ truncate into table openalex.stage$institutions_ids
 Fields terminated by '\t' trailing nullcols
 (
   INSTITUTION_ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   OPENALEX,
   ROR,
   GRID,
