@@ -2330,22 +2330,24 @@ component accessors="true" extends="helper" {
     ON (dest.id = src.id)
     WHEN MATCHED THEN
         UPDATE SET
-            dest.display_name = src.display_name,
-            dest.alternate_titles = src.alternate_titles,
-            dest.country_codes = src.country_codes,
-            dest.hierarchy_level=src.hierarchy_level,
-            dest.parent_publisher=src.parent_publisher,
-            dest.homepage_url=src.homepage_url,
-            dest.image_url=src.image_url,
-            dest.image_thumbnail_url=src.image_thumbnail_url,
-            dest.works_count=src.works_count,
-            dest.cited_by_count=src.cited_by_count,
-            dest.sources_api_url=src.sources_api_url,
-            dest.updated_date=src.updated_date
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.display_name = src.display_name,
+          dest.alternate_titles = src.alternate_titles,
+          dest.country_codes = src.country_codes,
+          dest.hierarchy_level=src.hierarchy_level,
+          dest.parent_publisher=src.parent_publisher,
+          dest.homepage_url=src.homepage_url,
+          dest.image_url=src.image_url,
+          dest.image_thumbnail_url=src.image_thumbnail_url,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.sources_api_url=src.sources_api_url,
+          dest.updated_date=src.updated_date
     WHEN NOT MATCHED THEN
-        INSERT (id, display_name, alternate_titles, country_codes, hierarchy_level, parent_publisher, homepage_url,
+        INSERT (id, snapshotdate, snapshotfilenumber, display_name, alternate_titles, country_codes, hierarchy_level, parent_publisher, homepage_url,
         image_url,image_thumbnail_url,works_count, cited_by_count, sources_api_url, updated_date)
-        VALUES (src.id, src.display_name, src.alternate_titles, src.country_codes, src.hierarchy_level, src.parent_publisher, 
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.display_name, src.alternate_titles, src.country_codes, src.hierarchy_level, src.parent_publisher, 
         src.homepage_url,src.image_url,src.image_thumbnail_url,src.works_count, src.cited_by_count, src.sources_api_url, src.updated_date)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
@@ -2369,12 +2371,14 @@ component accessors="true" extends="helper" {
     ON (dest.publisher_id = src.publisher_id AND dest.year = src.year)
     WHEN MATCHED THEN
         UPDATE SET
-            dest.works_count=src.works_count,
-            dest.cited_by_count=src.cited_by_count,
-            dest.oa_works_count=src.oa_works_count
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.oa_works_count=src.oa_works_count
     WHEN NOT MATCHED THEN
-        INSERT (publisher_id, year, works_count, cited_by_count, oa_works_count)
-        VALUES (src.publisher_id, src.year, src.works_count, src.cited_by_count, src.oa_works_count)",
+        INSERT (publisher_id, year, snapshotdate, snapshotfilenumber, works_count, cited_by_count, oa_works_count)
+        VALUES (src.publisher_id, src.year, src.snapshotdate, src.snapshotfilenumber, src.works_count, src.cited_by_count, src.oa_works_count)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2397,12 +2401,14 @@ component accessors="true" extends="helper" {
     ON (dest.publisher_id = src.publisher_id)
     WHEN MATCHED THEN
         UPDATE SET
-            dest.openalex=src.openalex,
-            dest.ror=src.ror,
-            dest.wikidata=src.wikidata
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.openalex=src.openalex,
+          dest.ror=src.ror,
+          dest.wikidata=src.wikidata
     WHEN NOT MATCHED THEN
-        INSERT (publisher_id, openalex, ror, wikidata)
-        VALUES (src.publisher_id, src.openalex, src.ror, src.wikidata)",
+        INSERT (publisher_id, snapshotdate, snapshotfilenumber, openalex, ror, wikidata)
+        VALUES (src.publisher_id, src.snapshotdate, src.snapshotfilenumber, src.openalex, src.ror, src.wikidata)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );

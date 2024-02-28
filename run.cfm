@@ -4,8 +4,8 @@ api.main(
   syncAuthors = false,
   syncConcepts = false,
   syncFunders = false,
-  syncInstitutions = true,
-  syncPublishers = false,
+  syncInstitutions = false,
+  syncPublishers = true,
   syncSources = false,
   syncWorks = false
 );
