@@ -2,7 +2,8 @@
 param (
     [string]$oraclepath = (Get-Location).Path,
     [string]$environment = "local",
-    [string]$importlist = "sources,sourcescountsbyyear,sourcesids"
+    [string]$importlist = "sources,sourcescountsbyyear,sourcesids",
+    [string]$importmode = "merge"
 )
 
 # Call settings script
