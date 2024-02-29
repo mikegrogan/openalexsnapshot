@@ -2218,21 +2218,23 @@ component accessors="true" extends="helper" {
     ON (dest.id = src.id)
     WHEN MATCHED THEN
         UPDATE SET
-            dest.issn_l = src.issn_l,
-            dest.issn = src.issn,
-            dest.display_name = src.display_name,
-            dest.publisher = src.publisher,
-            dest.works_count=src.works_count,
-            dest.cited_by_count=src.cited_by_count,
-            dest.is_oa=src.is_oa,
-            dest.is_in_doaj=src.is_in_doaj,
-            dest.homepage_url=src.homepage_url,
-            dest.works_api_url=src.works_api_url,
-            dest.updated_date=src.updated_date
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.issn_l = src.issn_l,
+          dest.issn = src.issn,
+          dest.display_name = src.display_name,
+          dest.publisher = src.publisher,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.is_oa=src.is_oa,
+          dest.is_in_doaj=src.is_in_doaj,
+          dest.homepage_url=src.homepage_url,
+          dest.works_api_url=src.works_api_url,
+          dest.updated_date=src.updated_date
     WHEN NOT MATCHED THEN
-        INSERT (id, issn_l, issn, display_name, publisher, works_count, cited_by_count, is_oa, is_in_doaj,
+        INSERT (id, snapshotdate, snapshotfilenumber, issn_l, issn, display_name, publisher, works_count, cited_by_count, is_oa, is_in_doaj,
           homepage_url, works_api_url, updated_date)
-        VALUES (src.id, src.issn_l, src.issn, src.display_name, src.publisher, src.works_count, src.cited_by_count, src.is_oa, 
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.issn_l, src.issn, src.display_name, src.publisher, src.works_count, src.cited_by_count, src.is_oa, 
           src.is_in_doaj, src.homepage_url, src.works_api_url, src.updated_date)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
@@ -2256,12 +2258,14 @@ component accessors="true" extends="helper" {
     ON (dest.source_id = src.source_id AND dest.year = src.year)
     WHEN MATCHED THEN
         UPDATE SET
-            dest.works_count=src.works_count,
-            dest.cited_by_count=src.cited_by_count,
-            dest.oa_works_count=src.oa_works_count
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.oa_works_count=src.oa_works_count
     WHEN NOT MATCHED THEN
-        INSERT (source_id, year, works_count, cited_by_count, oa_works_count)
-        VALUES (src.source_id, src.year, src.works_count, src.cited_by_count, src.oa_works_count)",
+        INSERT (source_id, year, snapshotdate, snapshotfilenumber, works_count, cited_by_count, oa_works_count)
+        VALUES (src.source_id, src.year, src.snapshotdate, src.snapshotfilenumber, src.works_count, src.cited_by_count, src.oa_works_count)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -2284,12 +2288,14 @@ component accessors="true" extends="helper" {
     ON (dest.source_id = src.source_id)
     WHEN MATCHED THEN
         UPDATE SET
-            dest.openalex=src.openalex,
-            dest.issn_l=src.issn_l,
-            dest.issn=src.issn,
-            dest.mag=src.mag,
-            dest.wikidata=src.wikidata,
-            dest.fatcat=src.fatcat
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.openalex=src.openalex,
+          dest.issn_l=src.issn_l,
+          dest.issn=src.issn,
+          dest.mag=src.mag,
+          dest.wikidata=src.wikidata,
+          dest.fatcat=src.fatcat
     WHEN NOT MATCHED THEN
         INSERT (source_id, openalex, issn_l, issn, mag, wikidata, fatcat)
         VALUES (src.source_id, src.openalex, src.issn_l, src.issn, src.mag, src.wikidata, src.fatcat)",

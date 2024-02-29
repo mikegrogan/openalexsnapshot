@@ -5,8 +5,8 @@ api.main(
   syncConcepts = false,
   syncFunders = false,
   syncInstitutions = false,
-  syncPublishers = true,
-  syncSources = false,
+  syncPublishers = false,
+  syncSources = true,
   syncWorks = false
 );
 </cfscript>

@@ -3,10 +3,12 @@ characterset utf8
 infile '.\csv\sources.csv'
 BADFILE '.\logs\sources.bad'
 DISCARDFILE '.\logs\sources.dsc'
-truncate into table openalex.stage$sources
+append into table openalex.sources
 Fields terminated by '\t' trailing nullcols
 (
   ID,
+  SNAPSHOTDATE Date "YYYY-MM-DD",
+  SNAPSHOTFILENUMBER,
   ISSN_L,
   ISSN CHAR(4000),
   DISPLAY_NAME CHAR(1500),
