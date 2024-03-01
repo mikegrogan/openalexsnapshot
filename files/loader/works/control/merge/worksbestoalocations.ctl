@@ -12,7 +12,7 @@ Fields terminated by '\t' trailing nullcols
   WORK_ID,
   SOURCE_ID,
   LANDING_PAGE_URL CHAR(2000),
-  PDF_URL CHAR(3000),
+  PDF_URL CHAR(4000),
   IS_OA,
   VERSION,
   LICENSE

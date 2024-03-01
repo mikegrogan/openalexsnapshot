@@ -530,7 +530,7 @@ CREATE TABLE openalex.works_primary_locations (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     landing_page_url VARCHAR2(2000),
-    pdf_url VARCHAR2(3000),
+    pdf_url VARCHAR2(4000),
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),
@@ -552,7 +552,7 @@ CREATE TABLE openalex.works_locations (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     landing_page_url VARCHAR2(2000),
-    pdf_url VARCHAR2(3000),
+    pdf_url VARCHAR2(4000),
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),
@@ -575,7 +575,7 @@ CREATE TABLE openalex.works_best_oa_locations (
     work_id VARCHAR2(50),
     source_id VARCHAR2(50),
     landing_page_url VARCHAR2(2000),
-    pdf_url VARCHAR2(3000),
+    pdf_url VARCHAR2(4000),
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),    
@@ -683,7 +683,7 @@ CREATE TABLE openalex.works_open_access (
     snapshotfilenumber NUMBER,
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     oa_status VARCHAR2(50),
-    oa_url VARCHAR2(3000),
+    oa_url VARCHAR2(4000),
     any_repository_has_fulltext NUMBER(1,0)  -- Assuming 1 or 0 for boolean values
 );
 
