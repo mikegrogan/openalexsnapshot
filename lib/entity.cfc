@@ -429,6 +429,13 @@ component accessors="true" extends="helper" {
                 authorship.raw_author_name = "";
               }
 
+              // need every record unique and the data coming from OA isn't always
+              inputs.data.worksauthorships.append(
+                hash(
+                  line.id & authorship.author.id & createODBCDateTime(now()),
+                  "MD5"
+                )
+              );
               inputs.data.worksauthorships.append(line.id);
               inputs.data.worksauthorships.append(authorship.author.id);
               inputs.data.worksauthorships.append(arguments.snapshotMetaData.updateDate);

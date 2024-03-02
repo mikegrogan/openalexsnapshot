@@ -593,6 +593,7 @@ SELECT * FROM OPENALEX.works_best_oa_locations WHERE 1 = 0;
 
 
 CREATE TABLE openalex.works_authorships (
+    unique_id VARCHAR2(40),
     work_id VARCHAR2(50),
     author_id VARCHAR2(50),
     snapshotdate date,
@@ -601,7 +602,7 @@ CREATE TABLE openalex.works_authorships (
     raw_author_name NCLOB,
     institution_id VARCHAR2(50),
     raw_affiliation_string NCLOB,
-    primary key (work_id,author_id)
+    primary key (unique_id)
 );
 
 -- ALTER TABLE openalex.works_authorships

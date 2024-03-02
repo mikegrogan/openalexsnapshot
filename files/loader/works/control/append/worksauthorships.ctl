@@ -6,6 +6,7 @@ DISCARDFILE '.\logs\worksauthorships.dsc'
 append into table openalex.works_authorships
 Fields terminated by '\t' trailing nullcols
 (
+  UNIQUE_ID,
   WORK_ID,
   AUTHOR_ID,
   SNAPSHOTDATE Date "YYYY-MM-DD",
