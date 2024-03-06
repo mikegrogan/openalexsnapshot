@@ -110,7 +110,7 @@ CREATE TABLE openalex.stage$mergeids (
 );
 
 CREATE TABLE openalex.authors (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     orcid VARCHAR2(50),
@@ -120,7 +120,8 @@ CREATE TABLE openalex.authors (
     cited_by_count NUMBER,
     last_known_institution VARCHAR2(50),
     works_api_url VARCHAR2(200),
-    updated_date TIMESTAMP
+    updated_date TIMESTAMP,
+    constraint pk_authors primary key(id)
 );
 
 -- ALTER TABLE openalex.authors
@@ -135,7 +136,7 @@ CREATE TABLE openalex.authors_affiliations (
     year NUMBER,
     snapshotdate date,
     snapshotfilenumber NUMBER,
-    primary key(author_id,institution_id,year)
+    constraint pk_authors_affiliations primary key(author_id,institution_id,year)
 );
 
 CREATE TABLE OPENALEX.stage$authors_affiliations AS
@@ -149,7 +150,7 @@ CREATE TABLE openalex.authors_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER,
-    primary key (author_id,year)
+    constraint pk_authors_counts_by_year primary key (author_id,year)
 );
 
 -- ALTER TABLE openalex.authors_counts_by_year
@@ -159,7 +160,7 @@ CREATE TABLE OPENALEX.stage$authors_counts_by_year AS
 SELECT * FROM OPENALEX.authors_counts_by_year WHERE 1 = 0;
 
 CREATE TABLE openalex.authors_ids (
-    author_id VARCHAR2(50) primary key,
+    author_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
@@ -167,7 +168,8 @@ CREATE TABLE openalex.authors_ids (
     scopus VARCHAR2(200),
     twitter VARCHAR2(200),
     wikipedia VARCHAR2(3000),
-    mag NUMBER
+    mag NUMBER,
+    constraint pk_authors_ids primary key (author_id)
 );
 
 -- ALTER TABLE openalex.authors_ids
@@ -179,7 +181,7 @@ SELECT * FROM OPENALEX.authors_ids WHERE 1 = 0;
 -- https://docs.google.com/document/d/1OgXSLriHO3Ekz0OYoaoP_h0sPcuvV4EqX7VgLLblKe4/edit#heading=h.mwc8rq67dbn1
 
 CREATE TABLE openalex.concepts (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     wikidata VARCHAR2(50),
@@ -191,7 +193,8 @@ CREATE TABLE openalex.concepts (
     image_url VARCHAR2(1000),
     image_thumbnail_url VARCHAR2(1000),
     works_api_url VARCHAR2(200),
-    updated_date TIMESTAMP
+    updated_date TIMESTAMP,
+    constraint pk_concepts primary key (id)
 );
 
 CREATE TABLE OPENALEX.stage$concepts AS
@@ -202,7 +205,7 @@ CREATE TABLE openalex.concepts_ancestors (
     ancestor_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
-    primary key (concept_id,ancestor_id)
+    constraint pk_concepts_ancestors primary key (concept_id,ancestor_id)
 );
 
 CREATE TABLE OPENALEX.stage$concepts_ancestors AS
@@ -216,14 +219,14 @@ CREATE TABLE openalex.concepts_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER,
-    primary key (concept_id,year)
+    constraint pk_concepts_counts_by_year primary key (concept_id,year)
 );
 
 CREATE TABLE OPENALEX.stage$concepts_counts_by_year AS
 SELECT * FROM OPENALEX.concepts_counts_by_year WHERE 1 = 0;
 
 CREATE TABLE openalex.concepts_ids (
-    concept_id VARCHAR2(50) primary key,
+    concept_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
@@ -231,7 +234,8 @@ CREATE TABLE openalex.concepts_ids (
     wikipedia VARCHAR2(3000),
     umls_aui CLOB, --CHECK (umls_aui IS JSON)
     umls_cui CLOB, --CHECK (umls_cui IS JSON)
-    mag NUMBER
+    mag NUMBER,
+    constraint pk_concepts_ids primary key (concept_id)
 );
 
 CREATE TABLE OPENALEX.stage$concepts_ids AS
@@ -243,7 +247,7 @@ CREATE TABLE openalex.concepts_related_concepts (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     score NUMBER,
-    primary key (concept_id,related_concept_id)
+    constraint pk_concepts_related_concepts primary key (concept_id,related_concept_id)
 );
 
 CREATE TABLE OPENALEX.stage$concepts_related_concepts AS
@@ -251,7 +255,7 @@ SELECT * FROM OPENALEX.concepts_related_concepts WHERE 1 = 0;
 
 
 CREATE TABLE openalex.funders (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1500),
@@ -264,21 +268,23 @@ CREATE TABLE openalex.funders (
     grants_count NUMBER,
     works_count NUMBER,
     cited_by_count NUMBER,
-    updated_date TIMESTAMP
+    updated_date TIMESTAMP,
+    constraint pk_funders primary key (id)
 );
 
 CREATE TABLE OPENALEX.stage$funders AS
 SELECT * FROM OPENALEX.funders WHERE 1 = 0;
 
 CREATE TABLE openalex.funders_ids (
-    funder_id VARCHAR2(50) primary key,
+    funder_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
     ror VARCHAR2(50),
     wikidata VARCHAR2(50),
     crossref VARCHAR2(50),
-    doi VARCHAR2(400)
+    doi VARCHAR2(400),
+    constraint pk_funders_ids primary key (funder_id)
 );
 
 CREATE TABLE OPENALEX.stage$funders_ids AS
@@ -291,14 +297,14 @@ CREATE TABLE openalex.funders_counts_by_year (
     snapshotfilenumber NUMBER,
     works_count NUMBER,
     cited_by_count NUMBER,
-    primary key (funder_id,year)
+    constraint pk_funders_counts_by_year primary key (funder_id,year)
 );
 
 CREATE TABLE OPENALEX.stage$funders_counts_by_year AS
 SELECT * FROM OPENALEX.funders_counts_by_year WHERE 1 = 0;
 
 CREATE TABLE openalex.institutions (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     ror VARCHAR2(50),
@@ -313,7 +319,8 @@ CREATE TABLE openalex.institutions (
     works_count NUMBER,
     cited_by_count NUMBER,
     works_api_url VARCHAR2(200),
-    updated_date TIMESTAMP
+    updated_date TIMESTAMP,
+    constraint pk_institutions primary key (id)
 );
 
 CREATE TABLE OPENALEX.stage$institutions AS
@@ -325,7 +332,7 @@ CREATE TABLE openalex.institutions_associated_institutions (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     relationship VARCHAR2(255),
-    primary key (institution_id,associated_institution_id)
+    constraint pk_institutions_associated_institutions primary key (institution_id,associated_institution_id)
 );
 
 CREATE TABLE OPENALEX.stage$institutions_associated_institutions AS
@@ -339,14 +346,14 @@ CREATE TABLE openalex.institutions_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER,
-    primary key (institution_id,year)
+    constraint pk_institutions_counts_by_year primary key (institution_id,year)
 );
 
 CREATE TABLE OPENALEX.stage$institutions_counts_by_year AS
 SELECT * FROM OPENALEX.institutions_counts_by_year WHERE 1 = 0;
 
 CREATE TABLE openalex.institutions_geo (
-    institution_id VARCHAR2(50) primary key,
+    institution_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     city VARCHAR2(500),
@@ -355,14 +362,15 @@ CREATE TABLE openalex.institutions_geo (
     country_code VARCHAR2(10),
     country VARCHAR2(100),
     latitude NUMBER,
-    longitude NUMBER
+    longitude NUMBER,
+    constraint pk_institutions_geo primary key (institution_id)
 );
 
 CREATE TABLE OPENALEX.stage$institutions_geo AS
 SELECT * FROM OPENALEX.institutions_geo WHERE 1 = 0;
 
 CREATE TABLE openalex.institutions_ids (
-    institution_id VARCHAR2(50) primary key,
+    institution_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
@@ -370,14 +378,15 @@ CREATE TABLE openalex.institutions_ids (
     grid VARCHAR2(50),
     wikipedia VARCHAR2(3000),
     wikidata VARCHAR2(50),
-    mag NUMBER
+    mag NUMBER,
+    constraint pk_institutions_ids primary key (institution_id)
 );
 
 CREATE TABLE OPENALEX.stage$institutions_ids AS
 SELECT * FROM OPENALEX.institutions_ids WHERE 1 = 0;
 
 CREATE TABLE openalex.publishers (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1000),
@@ -391,7 +400,8 @@ CREATE TABLE openalex.publishers (
     works_count NUMBER,
     cited_by_count NUMBER,
     sources_api_url VARCHAR2(200),
-    updated_date TIMESTAMP
+    updated_date TIMESTAMP,
+    constraint pk_publishers primary key (id)
 );
 
 CREATE TABLE OPENALEX.stage$publishers AS
@@ -405,26 +415,27 @@ CREATE TABLE openalex.publishers_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER,
-    primary key (publisher_id,year)
+    constraint pk_publishers_counts_by_year primary key (publisher_id,year)
 );
 
 CREATE TABLE OPENALEX.stage$publishers_counts_by_year AS
 SELECT * FROM OPENALEX.publishers_counts_by_year WHERE 1 = 0;
 
 CREATE TABLE openalex.publishers_ids (
-    publisher_id VARCHAR2(50) primary key,
+    publisher_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
     ror VARCHAR2(50),
-    wikidata VARCHAR2(50)
+    wikidata VARCHAR2(50),
+    constraint pk_publishers_ids primary key (publisher_id)
 );
 
 CREATE TABLE OPENALEX.stage$publishers_ids AS
 SELECT * FROM OPENALEX.publishers_ids WHERE 1 = 0;
 
 CREATE TABLE openalex.sources (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     issn_l VARCHAR2(50),
@@ -437,7 +448,8 @@ CREATE TABLE openalex.sources (
     is_in_doaj NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     homepage_url VARCHAR2(1000),
     works_api_url VARCHAR2(1000),
-    updated_date TIMESTAMP
+    updated_date TIMESTAMP,
+    constraint pk_sources primary key (id)
 );
 
 CREATE TABLE OPENALEX.stage$sources AS
@@ -451,14 +463,14 @@ CREATE TABLE openalex.sources_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER,
-    primary key (source_id,year)
+    constraint pk_sources_counts_by_year primary key (source_id)
 );
 
 CREATE TABLE OPENALEX.stage$sources_counts_by_year AS
 SELECT * FROM OPENALEX.sources_counts_by_year WHERE 1 = 0;
 
 CREATE TABLE openalex.sources_ids (
-    source_id VARCHAR2(50) primary key,
+    source_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
@@ -466,7 +478,8 @@ CREATE TABLE openalex.sources_ids (
     issn CLOB, --CHECK (issn IS JSON)
     mag NUMBER,
     wikidata VARCHAR2(50),
-    fatcat VARCHAR2(100)
+    fatcat VARCHAR2(100),
+    constraint pk_sources_ids primary key (source_id)
 );
 
 CREATE TABLE OPENALEX.stage$sources_ids AS
@@ -476,22 +489,24 @@ SELECT * FROM OPENALEX.sources_ids WHERE 1 = 0;
 -- https://docs.google.com/document/d/1bDopkhuGieQ4F8gGNj7sEc8WSE8mvLZS/edit#heading=h.5w2tb5fcg77r
 
 CREATE TABLE openalex.topics (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1000),
-    description NVARCHAR2(500)
+    description NVARCHAR2(500),
+    constraint pk_topics primary key (id)
 );
 
 CREATE TABLE OPENALEX.stage$topics AS
 SELECT * FROM OPENALEX.topics WHERE 1 = 0;
 
 CREATE TABLE openalex.topics_ids (
-    topic_id VARCHAR2(50) primary key,
+    topic_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
-    wikipedia VARCHAR2(3000)
+    wikipedia VARCHAR2(3000),
+    constraint pk_topics_ids primary key (topic_id)
 );
 
 CREATE TABLE OPENALEX.stage$topics_ids AS
@@ -499,7 +514,7 @@ SELECT * FROM OPENALEX.topics_ids WHERE 1 = 0;
 
 
 CREATE TABLE openalex.works (
-    id VARCHAR2(50) primary key,
+    id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     doi VARCHAR2(400),
@@ -512,7 +527,8 @@ CREATE TABLE openalex.works (
     is_retracted NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     is_paratext NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     cited_by_api_url VARCHAR2(200),
-    language VARCHAR2(50)
+    language VARCHAR2(50),
+    constraint pk_works primary key (id)
 );
 
 CREATE TABLE OPENALEX.stage$works AS
@@ -534,7 +550,7 @@ CREATE TABLE openalex.works_primary_locations (
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),
-    primary key (unique_id)
+    constraint pk_works_primary_locations primary key (unique_id)
 );
 
 -- ALTER TABLE openalex.works_primary_locations
@@ -556,7 +572,7 @@ CREATE TABLE openalex.works_locations (
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),
-    primary key (unique_id)
+    constraint pk_works_locations primary key (unique_id)
 );
 
 -- ALTER TABLE openalex.works_locations
@@ -579,7 +595,7 @@ CREATE TABLE openalex.works_best_oa_locations (
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50),    
-    primary key (unique_id)
+    constraint pk_works_best_oa_locations primary key (unique_id)
 );
 
 -- ALTER TABLE openalex.works_best_oa_locations
@@ -602,7 +618,7 @@ CREATE TABLE openalex.works_authorships (
     raw_author_name NCLOB,
     institution_id VARCHAR2(50),
     raw_affiliation_string NCLOB,
-    primary key (unique_id)
+    constraint pk_works_authorships primary key (unique_id)
 );
 
 -- ALTER TABLE openalex.works_authorships
@@ -612,13 +628,14 @@ CREATE TABLE OPENALEX.stage$works_authorships AS
 SELECT * FROM OPENALEX.works_authorships WHERE 1 = 0;
 
 CREATE TABLE openalex.works_biblio (
-    work_id VARCHAR2(50) primary key,
+    work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     volume VARCHAR2(50),
     issue VARCHAR2(100),
     first_page VARCHAR2(100),
-    last_page VARCHAR2(100)
+    last_page VARCHAR2(100),
+    constraint pk_work_id primary key (work_id)
 );
 
 -- ALTER TABLE openalex.works_biblio
@@ -633,7 +650,7 @@ CREATE TABLE openalex.works_concepts (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     score NUMBER,
-    primary key (work_id,concept_id)
+    constraint pk_works_concepts primary key (work_id,concept_id)
 );
 
 -- ALTER TABLE openalex.works_concepts
@@ -643,14 +660,15 @@ CREATE TABLE OPENALEX.stage$works_concepts AS
 SELECT * FROM OPENALEX.works_concepts WHERE 1 = 0;
 
 CREATE TABLE openalex.works_ids (
-    work_id VARCHAR2(50) primary key,
+    work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
     doi VARCHAR2(400),
     mag NUMBER,
     pmid VARCHAR2(100),
-    pmcid VARCHAR2(100)
+    pmcid VARCHAR2(100),
+    constraint pk_works_ids primary key (work_id)
 );
 
 -- ALTER TABLE openalex.works_ids
@@ -669,7 +687,7 @@ CREATE TABLE openalex.works_mesh (
     qualifier_ui VARCHAR2(50),
     qualifier_name VARCHAR2(100),
     is_major_topic NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
-    primary key (work_id,merge_id)
+    constraint pk_works_mesh primary key (work_id,merge_id)
 );
 
 -- ALTER TABLE openalex.works_mesh
@@ -679,13 +697,14 @@ CREATE TABLE OPENALEX.stage$works_mesh AS
 SELECT * FROM OPENALEX.works_mesh WHERE 1 = 0;
 
 CREATE TABLE openalex.works_open_access (
-    work_id VARCHAR2(50) primary key,
+    work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     oa_status VARCHAR2(50),
     oa_url VARCHAR2(4000),
-    any_repository_has_fulltext NUMBER(1,0)  -- Assuming 1 or 0 for boolean values
+    any_repository_has_fulltext NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
+    constraint pk_works_open_access primary key (work_id)
 );
 
 -- ALTER TABLE openalex.works_open_access
@@ -699,7 +718,7 @@ CREATE TABLE openalex.works_referenced_works (
     referenced_work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
-    primary key (work_id,referenced_work_id)
+    constraint pk_works_referenced_works primary key (work_id,referenced_work_id)
 );
 
 -- ALTER TABLE openalex.works_referenced_works
@@ -713,7 +732,7 @@ CREATE TABLE openalex.works_related_works (
     related_work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
-    primary key (work_id,related_work_id)
+    constraint works_related_works primary key (work_id,related_work_id)
 );
 
 -- ALTER TABLE openalex.works_related_works

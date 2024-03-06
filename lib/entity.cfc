@@ -432,7 +432,7 @@ component accessors="true" extends="helper" {
               // need every record unique and the data coming from OA isn't always
               inputs.data.worksauthorships.append(
                 hash(
-                  line.id & authorship.author.id & createODBCDateTime(now()),
+                  createUUID(),
                   "MD5"
                 )
               );

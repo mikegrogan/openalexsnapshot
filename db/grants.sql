@@ -5,3 +5,11 @@ BEGIN
   END LOOP;
 END;
 /
+
+-- doesn't quite work. needs dba role possibly
+BEGIN
+FOR idx IN (SELECT index_name FROM all_indexes WHERE table_owner = 'OPENALEX') LOOP
+  EXECUTE IMMEDIATE 'GRANT ALTER ON OPENALEX.' || idx.index_name || ' TO [SCHEMA]';
+END LOOP;
+end;
+/

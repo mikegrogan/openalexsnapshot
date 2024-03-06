@@ -286,7 +286,7 @@ component accessors="true" extends="helper" {
 
     outputH2("Checking and deleting any #arguments.entity# table records beyond sync snapshot (append mode only)");
     for (var table in getActiveTables(arguments.entity)){
-      var test = queryExecute(
+      queryExecute(
         "delete FROM #this.getSchema()#.#table.name#
         WHERE (snapshotdate > :snapshotdate
             OR (snapshotdate = :snapshotdate AND snapshotfilenumber > :snapshotfile))",
@@ -306,6 +306,41 @@ component accessors="true" extends="helper" {
     }
 
     return result;
+  }
+
+  public function rebuildPKIndex(entity) hint="Only applies to append mode"{
+    var result = {success: true};
+
+    queryExecute(
+    "alter index openalex.pk_works rebuild",
+    [],
+    {datasource: getDatasource(),result:"qryresult"});
+
+    writeDump(var=qryresult,abort=true,label="");
+    
+    
+
+    // outputH2("Rebuilding #arguments.entity# primary key table index (append mode only)");
+    // for (var table in getActiveTables(arguments.entity)){
+    //   queryExecute(
+    //     "alter index #this.getSchema()#.pk_#table.name# rebuild",
+    //     {},
+    //     {datasource: getDatasource(), result: "rebuildQryResult"}
+    //   );
+
+    //   writeDump(var=rebuildQryResult,abort=true,label="");
+      
+
+    //   if (isStruct(rebuildQryResult)){
+    //     outputSuccess("Rebuilt #table.name# primary key index");
+    //     flush;
+    //   }
+    //   else{
+    //     result.success = false;
+    //   }
+    // }
+
+    // return result;
   }
 
   public function isTableinEntityList(entity, tablaname){
