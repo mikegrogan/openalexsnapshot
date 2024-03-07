@@ -615,7 +615,7 @@ CREATE TABLE openalex.fields (
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1000),
     display_name_alternatives NCLOB,
-    description NVARCHAR2(500),
+    description NVARCHAR2(1000),
     domain_id VARCHAR2(50),
     works_count NUMBER,
     cited_by_count NUMBER,

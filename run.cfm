@@ -4,12 +4,12 @@ api.main(
   syncAuthors = false,
   syncDomains = false,
   syncConcepts = false,
-  syncFields = false,
+  syncFields = true,
   syncFunders = false,
   syncInstitutions = false,
   syncPublishers = false,
   syncSources = false,
-  syncSubfields = true,
+  syncSubfields = false,
   syncTopics = false,
   syncWorks = false
 );

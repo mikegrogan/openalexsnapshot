@@ -1548,6 +1548,134 @@ component accessors="true" extends="helper" {
     return result;
   }
 
+  private any function processFieldsData(snapshotfile, snapshotMetaData){
+    var result = {success: false};
+
+    var javaSystem = createObject("java", "java.lang.System");
+
+    if (arguments.snapshotfile.success){
+      try{
+        var inputs = setupEntityCSVFiles("fields");
+
+        // Create a file object
+        var fieldsData = fileOpen(arguments.snapshotfile.filepath, "read");
+
+        var flushCounter = 0;
+        var counter = 0;
+        // holds single row of data to process
+        var line = {};
+
+        // loop through rows of data
+        while (!fileIsEOF(fieldsData)){
+          line = fileReadLine(fieldsData).deserializeJSON();
+          if (!line.keyExists("display_name_alternatives")){
+            line.display_name_alternatives = [];
+          }
+
+          // fields
+          if (inputs.data.keyExists("fields")){
+            inputs.data.fields.append(line.id);
+            inputs.data.fields.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.fields.append(arguments.snapshotMetaData.filenumber);
+            inputs.data.fields.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
+            (line.display_name_alternatives.isEmpty()) ? inputs.data.fields.append("") : inputs.data.fields.append(
+              line.display_name_alternatives.slice(1, min(line.display_name_alternatives.len(), 100)).toJson()
+            );
+            inputs.data.fields.append(line.description);
+            inputs.data.fields.append(line.domain.id);
+            inputs.data.fields.append(line.works_count);
+            inputs.data.fields.append(line.cited_by_count);
+            inputs.data.fields.append(line.works_api_url);
+            inputs.data.fields.append(line.updated_date);
+
+            inputs.writer.fields.write(inputs.data.fields.toList(this.csvDelimiter));
+            inputs.writer.fields.newLine();
+            inputs.data.fields.clear();
+          }
+
+          // fields ids
+          if (inputs.data.keyExists("fieldsids")){
+            if (line.keyExists("ids")){
+              inputs.data.fieldsids.append(line.id);
+              inputs.data.fieldsids.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.fieldsids.append(arguments.snapshotMetaData.filenumber);
+              inputs.data.fieldsids.append(line.ids.wikidata);
+              inputs.data.fieldsids.append(line.ids.wikipedia);
+
+              inputs.writer.fieldsids.write(inputs.data.fieldsids.toList(this.csvDelimiter));
+              inputs.writer.fieldsids.newLine();
+              inputs.data.fieldsids.clear();
+            }
+          }
+
+          // subfields siblings
+          if (inputs.data.keyExists("fieldssiblings")){
+            if (line.keyExists("siblings")){
+              for (var sibling in line.siblings){
+                inputs.data.fieldssiblings.append(line.id);
+                inputs.data.fieldssiblings.append(sibling.id);
+                inputs.data.fieldssiblings.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.fieldssiblings.append(arguments.snapshotMetaData.filenumber);
+
+                inputs.writer.fieldssiblings.write(inputs.data.fieldssiblings.toList(this.csvDelimiter));
+                inputs.writer.fieldssiblings.newLine();
+                inputs.data.fieldssiblings.clear();
+              }
+            }
+          }
+
+          // fields subfields
+          if (inputs.data.keyExists("fieldssubfields")){
+            if (line.keyExists("topics")){
+              for (var subfield in line.subfields){
+                inputs.data.fieldssubfields.append(line.id);
+                inputs.data.fieldssubfields.append(subfield.id);
+                inputs.data.fieldssubfields.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.fieldssubfields.append(arguments.snapshotMetaData.filenumber);
+
+                inputs.writer.fieldssubfields.write(inputs.data.fieldssubfields.toList(this.csvDelimiter));
+                inputs.writer.fieldssubfields.newLine();
+                inputs.data.fieldssubfields.clear();
+              }
+            }
+          }
+
+          flushCounter++;
+          if (flushCounter == this.getwriteFlushLimit()){
+            counter = counter + this.getwriteFlushLimit();
+
+            for (var name in inputs.writer){
+              inputs.writer[name].flush();
+            }
+
+            // Reset the flushCounter
+            flushCounter = 0;
+          }
+          line.clear();
+        }
+      }
+      catch (any e){
+        outputError("Error: #e.message#");
+        writeDump(var = line, abort = false, label = "");
+        writeDump(var = e, abort = true, label = "fields error");
+      }
+      finally{
+        fileClose(fieldsData);
+        for (var name in inputs.writer){
+          inputs.writer[name].close();
+        }
+
+        for (var csv in inputs.csv){
+          outputSuccess("Finished saving #csv# file to #inputs.csv[csv]#");
+        }
+
+        result.success = true;
+      }
+    }
+
+    return result;
+  }
+
   private any function processFundersData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
@@ -3313,6 +3441,142 @@ component accessors="true" extends="helper" {
         result.data.concepts_related_concepts.success = true;
         result.data.concepts_related_concepts.recordcount = qryresult.recordcount;
         outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_related_concepts.recordcount# staging concepts_related_concepts records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    return result;
+  }
+
+  private any function mergeFieldsStageWithMain(parallel=1){
+    var result = {
+      success: true,
+      data: {
+        fields: {success: false, recordcount: 0},
+        fields_ids: {success: false, recordcount: 0},
+        fields_siblings: {success: false, recordcount: 0},
+        fields_subfields: {success: false, recordcount: 0}
+      }
+    };
+
+    var activeTables = this.tables.getActiveTableNamesList("fields");
+
+    // fields
+    if (activeTables.listFind("fields")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.fields dest
+    USING #getSchema()#.stage$fields src
+    ON (dest.id = src.id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.display_name = src.display_name,
+          dest.display_name_alternatives = src.display_name_alternatives,
+          dest.description = src.description,
+          dest.domain_id = src.domain_id,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.works_api_url=src.works_api_url,
+          dest.updated_date=src.updated_date
+    WHEN NOT MATCHED THEN
+        INSERT (id, snapshotdate, snapshotfilenumber, display_name, display_name_alternatives, description, domain_id, 
+        works_count, cited_by_count, works_api_url, updated_date)
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.display_name, src.display_name_alternatives, src.description, 
+        src.domain_id, src.works_count, src.cited_by_count, src.works_api_url, src.updated_date)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.fields.success = true;
+        result.data.fields.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.fields.recordcount# staging fields records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // ids
+    if (activeTables.listFind("fieldsids")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.fields_ids dest
+    USING #getSchema()#.stage$fields_ids src
+    ON (dest.field_id = src.field_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.wikidata=src.wikidata,
+          dest.wikipedia=src.wikipedia
+    WHEN NOT MATCHED THEN
+        INSERT (field_id, snapshotdate, snapshotfilenumber, wikidata, wikipedia)
+        VALUES (src.field_id, src.snapshotdate, src.snapshotfilenumber, src.wikidata, src.wikipedia)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.fields_ids.success = true;
+        result.data.fields_ids.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.fields_ids.recordcount# staging fields_ids records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // siblings
+    if (activeTables.listFind("fieldssiblings")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.fields_siblings dest
+    USING #getSchema()#.stage$fields_siblings src
+    ON (dest.field_id = src.field_id AND dest.sibling_id = src.sibling_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber
+    WHEN NOT MATCHED THEN
+        INSERT (field_id, sibling_id, snapshotdate, snapshotfilenumber)
+        VALUES (src.field_id, src.sibling_id, src.snapshotdate, src.snapshotfilenumber)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.fields_siblings.success = true;
+        result.data.fields_siblings.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.fields_siblings.recordcount# staging fields_siblings records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // fields subfields
+    if (activeTables.listFind("fieldssubfields")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.fields_subfields dest
+    USING #getSchema()#.stage$fields_subfields src
+    ON (dest.field_id = src.field_id AND dest.subfield_id = src.subfield_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber
+    WHEN NOT MATCHED THEN
+        INSERT (field_id, subfield_id, snapshotdate, snapshotfilenumber)
+        VALUES (src.field_id, src.subfield_id, src.snapshotdate, src.snapshotfilenumber)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.fields_subfields.success = true;
+        result.data.fields_subfields.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.fields_subfields.recordcount# staging fields_subfields records with main");
         flush;
       }
       else{
