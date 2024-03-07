@@ -17,7 +17,8 @@ component accessors="true" extends="helper" {
         outputH2("Processing remaining #arguments.entity# merged data to delete");
       }
       else{
-        outputH2("All up to date with #arguments.entity# merged data to delete");
+        outputImportant("All up to date with #arguments.entity# merged data to delete");
+        result.success = true;
       }
       var limit = 0;
       for (var merged in filestoprocess.data){

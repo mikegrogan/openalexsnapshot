@@ -308,39 +308,27 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  public function rebuildPKIndex(entity) hint="Only applies to append mode"{
+  public function rebuildPrimaryKeyIndex(entity) hint="Only applies to append mode"{
     var result = {success: true};
 
-    queryExecute(
-    "alter index openalex.pk_works rebuild",
-    [],
-    {datasource: getDatasource(),result:"qryresult"});
+    outputH3("Rebuilding #arguments.entity# primary key table index (append mode only)");
+    for (var table in getActiveTables(arguments.entity)){
+      queryExecute(
+        "alter index #this.getSchema()#.pk_#table.name# rebuild",
+        {},
+        {datasource: getDatasource(), result: "qryResult"}
+      );
 
-    writeDump(var=qryresult,abort=true,label="");
-    
-    
+      if (isStruct(qryResult)){
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Rebuilt #table.name# primary key index");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
 
-    // outputH2("Rebuilding #arguments.entity# primary key table index (append mode only)");
-    // for (var table in getActiveTables(arguments.entity)){
-    //   queryExecute(
-    //     "alter index #this.getSchema()#.pk_#table.name# rebuild",
-    //     {},
-    //     {datasource: getDatasource(), result: "rebuildQryResult"}
-    //   );
-
-    //   writeDump(var=rebuildQryResult,abort=true,label="");
-      
-
-    //   if (isStruct(rebuildQryResult)){
-    //     outputSuccess("Rebuilt #table.name# primary key index");
-    //     flush;
-    //   }
-    //   else{
-    //     result.success = false;
-    //   }
-    // }
-
-    // return result;
+    return result;
   }
 
   public function isTableinEntityList(entity, tablaname){

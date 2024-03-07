@@ -29,16 +29,30 @@ component accessors="true" extends="helper" {
       if (!manifestResult.success){
         break;
       }
-      else{
-        var processEntityResult = processEntitySnapshots(entity = entity);
 
-        if (!processEntityResult.success){
+      // process snapshots
+      var processEntityResult = processEntitySnapshots(entity = entity);
+      if (!processEntityResult.success){
+        break;
+      }
+
+      // work on merged ids that need to be deleted
+      outputH2("Working on #entity# Deletions");
+      var processMergeResult = this.merge.processEntityMergedIds(entity = entity);
+      result.success = true;
+
+      if (!processMergeResult.success){
+        break;
+      }
+
+      if (this.tables.getEntityImportMode(entity) == "append"){
+        // append mode disables primary key indexes
+        // it's faster to import, but we need to rebuild them
+        // and hope that they are no duplicates
+        outputH2("Working on #entity# primary key reindexing (append mode only)");
+        var rebuildIndexResult = this.tables.rebuildPrimaryKeyIndex(entity = entity);
+        if (!rebuildIndexResult.success){
           break;
-        }
-        else{
-          outputH2("Working on #entity# Deletions");
-          var processMergeResult = this.merge.processEntityMergedIds(entity = entity);
-          result.success = true;
         }
       }
     }
@@ -52,7 +66,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -67,7 +81,7 @@ component accessors="true" extends="helper" {
         }
       }
       else{
-        outputH2("All up to date with #arguments.entity# snapshots");
+        outputImportant("All up to date with #arguments.entity# snapshots");
         result.success = true;
       }
 
@@ -430,12 +444,7 @@ component accessors="true" extends="helper" {
               }
 
               // need every record unique and the data coming from OA isn't always
-              inputs.data.worksauthorships.append(
-                hash(
-                  createUUID(),
-                  "MD5"
-                )
-              );
+              inputs.data.worksauthorships.append(hash(createUUID(), "MD5"));
               inputs.data.worksauthorships.append(line.id);
               inputs.data.worksauthorships.append(authorship.author.id);
               inputs.data.worksauthorships.append(arguments.snapshotMetaData.updateDate);
