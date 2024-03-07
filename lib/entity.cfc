@@ -1548,6 +1548,133 @@ component accessors="true" extends="helper" {
     return result;
   }
 
+  private any function processDomainsData(snapshotfile, snapshotMetaData){
+    var result = {success: false};
+
+    var javaSystem = createObject("java", "java.lang.System");
+
+    if (arguments.snapshotfile.success){
+      try{
+        var inputs = setupEntityCSVFiles("domains");
+
+        // Create a file object
+        var domainsData = fileOpen(arguments.snapshotfile.filepath, "read");
+
+        var flushCounter = 0;
+        var counter = 0;
+        // holds single row of data to process
+        var line = {};
+
+        // loop through rows of data
+        while (!fileIsEOF(domainsData)){
+          line = fileReadLine(domainsData).deserializeJSON();
+          if (!line.keyExists("display_name_alternatives")){
+            line.display_name_alternatives = [];
+          }
+
+          // domains
+          if (inputs.data.keyExists("domains")){
+            inputs.data.domains.append(line.id);
+            inputs.data.domains.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.domains.append(arguments.snapshotMetaData.filenumber);
+            inputs.data.domains.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
+            (line.display_name_alternatives.isEmpty()) ? inputs.data.domains.append("") : inputs.data.domains.append(
+              line.display_name_alternatives.slice(1, min(line.display_name_alternatives.len(), 100)).toJson()
+            );
+            inputs.data.domains.append(line.description);
+            inputs.data.domains.append(line.works_count);
+            inputs.data.domains.append(line.cited_by_count);
+            inputs.data.domains.append(line.works_api_url);
+            inputs.data.domains.append(line.updated_date);
+
+            inputs.writer.domains.write(inputs.data.domains.toList(this.csvDelimiter));
+            inputs.writer.domains.newLine();
+            inputs.data.domains.clear();
+          }
+
+          // domains ids
+          if (inputs.data.keyExists("domainsids")){
+            if (line.keyExists("ids")){
+              inputs.data.domainsids.append(line.id);
+              inputs.data.domainsids.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.domainsids.append(arguments.snapshotMetaData.filenumber);
+              inputs.data.domainsids.append(line.ids.wikidata);
+              inputs.data.domainsids.append(line.ids.wikipedia);
+
+              inputs.writer.domainsids.write(inputs.data.domainsids.toList(this.csvDelimiter));
+              inputs.writer.domainsids.newLine();
+              inputs.data.domainsids.clear();
+            }
+          }
+
+          // domains siblings
+          if (inputs.data.keyExists("domainssiblings")){
+            if (line.keyExists("siblings")){
+              for (var sibling in line.siblings){
+                inputs.data.domainssiblings.append(line.id);
+                inputs.data.domainssiblings.append(sibling.id);
+                inputs.data.domainssiblings.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.domainssiblings.append(arguments.snapshotMetaData.filenumber);
+
+                inputs.writer.domainssiblings.write(inputs.data.domainssiblings.toList(this.csvDelimiter));
+                inputs.writer.domainssiblings.newLine();
+                inputs.data.domainssiblings.clear();
+              }
+            }
+          }
+
+          // domains fields
+          if (inputs.data.keyExists("domainsfields")){
+            if (line.keyExists("fields")){
+              for (var field in line.fields){
+                inputs.data.domainsfields.append(line.id);
+                inputs.data.domainsfields.append(field.id);
+                inputs.data.domainsfields.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.domainsfields.append(arguments.snapshotMetaData.filenumber);
+
+                inputs.writer.domainsfields.write(inputs.data.domainsfields.toList(this.csvDelimiter));
+                inputs.writer.domainsfields.newLine();
+                inputs.data.domainsfields.clear();
+              }
+            }
+          }
+
+          flushCounter++;
+          if (flushCounter == this.getwriteFlushLimit()){
+            counter = counter + this.getwriteFlushLimit();
+
+            for (var name in inputs.writer){
+              inputs.writer[name].flush();
+            }
+
+            // Reset the flushCounter
+            flushCounter = 0;
+          }
+          line.clear();
+        }
+      }
+      catch (any e){
+        outputError("Error: #e.message#");
+        writeDump(var = line, abort = false, label = "");
+        writeDump(var = e, abort = true, label = "domains error");
+      }
+      finally{
+        fileClose(domainsData);
+        for (var name in inputs.writer){
+          inputs.writer[name].close();
+        }
+
+        for (var csv in inputs.csv){
+          outputSuccess("Finished saving #csv# file to #inputs.csv[csv]#");
+        }
+
+        result.success = true;
+      }
+    }
+
+    return result;
+  }
+
   private any function processFieldsData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
@@ -3441,6 +3568,141 @@ component accessors="true" extends="helper" {
         result.data.concepts_related_concepts.success = true;
         result.data.concepts_related_concepts.recordcount = qryresult.recordcount;
         outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.concepts_related_concepts.recordcount# staging concepts_related_concepts records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    return result;
+  }  
+
+  private any function mergeDomainsStageWithMain(parallel=1){
+    var result = {
+      success: true,
+      data: {
+        domains: {success: false, recordcount: 0},
+        domains_fields: {success: false, recordcount: 0},
+        domains_ids: {success: false, recordcount: 0},
+        domains_siblings: {success: false, recordcount: 0}
+      }
+    };
+
+    var activeTables = this.tables.getActiveTableNamesList("domains");
+
+    // domains
+    if (activeTables.listFind("domains")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.domains dest
+    USING #getSchema()#.stage$domains src
+    ON (dest.id = src.id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.display_name = src.display_name,
+          dest.display_name_alternatives = src.display_name_alternatives,
+          dest.description = src.description,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.works_api_url=src.works_api_url,
+          dest.updated_date=src.updated_date
+    WHEN NOT MATCHED THEN
+        INSERT (id, snapshotdate, snapshotfilenumber, display_name, display_name_alternatives, description, 
+        works_count, cited_by_count, works_api_url, updated_date)
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.display_name, src.display_name_alternatives, src.description, 
+        src.works_count, src.cited_by_count, src.works_api_url, src.updated_date)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.domains.success = true;
+        result.data.domains.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.domains.recordcount# staging domains records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // ids
+    if (activeTables.listFind("domainsids")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.domains_ids dest
+    USING #getSchema()#.stage$domains_ids src
+    ON (dest.domain_id = src.domain_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.wikidata=src.wikidata,
+          dest.wikipedia=src.wikipedia
+    WHEN NOT MATCHED THEN
+        INSERT (domain_id, snapshotdate, snapshotfilenumber, wikidata, wikipedia)
+        VALUES (src.domain_id, src.snapshotdate, src.snapshotfilenumber, src.wikidata, src.wikipedia)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.domains_ids.success = true;
+        result.data.domains_ids.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.domains_ids.recordcount# staging domains_ids records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // siblings
+    if (activeTables.listFind("domainssiblings")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.domains_siblings dest
+    USING #getSchema()#.stage$domains_siblings src
+    ON (dest.domain_id = src.domain_id AND dest.sibling_id = src.sibling_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber
+    WHEN NOT MATCHED THEN
+        INSERT (domain_id, sibling_id, snapshotdate, snapshotfilenumber)
+        VALUES (src.domain_id, src.sibling_id, src.snapshotdate, src.snapshotfilenumber)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.domains_siblings.success = true;
+        result.data.domains_siblings.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.domains_siblings.recordcount# staging domains_siblings records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // domains fields
+    if (activeTables.listFind("domainsfields")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.domains_fields dest
+    USING #getSchema()#.stage$domains_fields src
+    ON (dest.domain_id = src.domain_id AND dest.field_id = src.field_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber
+    WHEN NOT MATCHED THEN
+        INSERT (domain_id, field_id, snapshotdate, snapshotfilenumber)
+        VALUES (src.domain_id, src.field_id, src.snapshotdate, src.snapshotfilenumber)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.domains_fields.success = true;
+        result.data.domains_fields.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.domains_fields.recordcount# staging domains_fields records with main");
         flush;
       }
       else{

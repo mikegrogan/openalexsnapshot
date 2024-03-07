@@ -100,7 +100,7 @@ component accessors="true" extends="helper" {
             active: true
           }
         ],
-        importmode: "merge"
+        importmode: "append"
       },
       fields: {
         fields: [

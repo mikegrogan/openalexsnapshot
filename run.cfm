@@ -2,9 +2,9 @@
 api = new OpenAlexClient();
 api.main(
   syncAuthors = false,
-  syncDomains = false,
+  syncDomains = true,
   syncConcepts = false,
-  syncFields = true,
+  syncFields = false,
   syncFunders = false,
   syncInstitutions = false,
   syncPublishers = false,
