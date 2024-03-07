@@ -9,8 +9,8 @@ api.main(
   syncInstitutions = false,
   syncPublishers = false,
   syncSources = false,
-  syncSubfields = false,
-  syncTopics = true,
+  syncSubfields = true,
+  syncTopics = false,
   syncWorks = false
 );
 </cfscript>
