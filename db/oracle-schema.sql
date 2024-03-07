@@ -519,7 +519,7 @@ CREATE TABLE openalex.topics (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1000),
-    description NVARCHAR2(500),
+    description NVARCHAR2(1000),
     keywords NCLOB,
     subfield_id VARCHAR2(50),
     field_id VARCHAR2(50),

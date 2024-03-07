@@ -12,7 +12,10 @@ component accessors="true" extends="helper" {
 
     var filesToProcess = getMergedFilesNotComplete(entity = arguments.entity);
 
-    if (filesToProcess.success){
+    if (!filesToProcess.success){
+      result.success = true;
+    }
+    else{
       if (filesToProcess.data.len() > 0){
         outputH2("Processing remaining #arguments.entity# merged data to delete");
       }

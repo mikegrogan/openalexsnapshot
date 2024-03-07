@@ -26,12 +26,16 @@ component accessors="true" extends="lib.helper" {
    * @syncWorks
    */
   public any function main(
-    boolean syncAuthors = true,
+    boolean syncAuthors = false,
+    boolean syncDomains = false,
     boolean syncConcepts = false,
+    boolean syncFields = false,
     boolean syncFunders = false,
     boolean syncInstitutions = false,
     boolean syncPublishers = false,
     boolean syncSources = false,
+    boolean syncSubfields = false,
+    boolean syncTopics = false,
     boolean syncWorks = false
   ){
     preSaveActions();
@@ -54,16 +58,24 @@ component accessors="true" extends="lib.helper" {
 
   /**
    * Converts true values into a list
+   * possible options: authors,concepts,domains,fields,funders,insititutions,publishers,sources,subfields,works
    *
    * @syncFlags
    */
-  private struct function handleSyncArguments(syncFlags)
-    hint="possible options: authors,concepts,funders,insititutions,publishers,sources,works"
-  {
+  private struct function handleSyncArguments(syncFlags){
     var result = {success: false, data: ""};
 
+    if (arguments.syncFlags.syncauthors){
+      result.data = result.data.listAppend("authors");
+    }
     if (arguments.syncFlags.syncconcepts){
       result.data = result.data.listAppend("concepts");
+    }
+    if (arguments.syncFlags.syncdomains){
+      result.data = result.data.listAppend("domains");
+    }
+    if (arguments.syncflags.syncfields){
+      result.data = result.data.listappend("fields");
     }
     if (arguments.syncflags.syncfunders){
       result.data = result.data.listappend("funders");
@@ -77,8 +89,11 @@ component accessors="true" extends="lib.helper" {
     if (arguments.syncflags.syncsources){
       result.data = result.data.listappend("sources");
     }
-    if (arguments.syncFlags.syncauthors){
-      result.data = result.data.listAppend("authors");
+    if (arguments.syncflags.syncsubfields){
+      result.data = result.data.listappend("subfields");
+    }
+    if (arguments.syncflags.synctopics){
+      result.data = result.data.listappend("topics");
     }
     if (arguments.syncflags.syncworks){
       result.data = result.data.listappend("works");

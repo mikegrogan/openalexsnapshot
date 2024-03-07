@@ -73,6 +73,64 @@ component accessors="true" extends="helper" {
         ],
         importmode: "merge"
       },
+      domains: {
+        fields: [
+          {
+            name: "domains",
+            id: "id",
+            fields: "id,snapshotdate,snapshotfilenumber,display_name,display_name_alternatives,description,works_count,cited_by_count,works_api_url,updated_date",
+            active: true
+          },
+          {
+            name: "domains_fields",
+            id: "domain_id",
+            fields: "domain_id,field_id,snapshotdate,snapshotfilenumber",
+            active: true
+          },
+          {
+            name: "domains_ids",
+            id: "domain_id",
+            fields: "domain_id,snapshotdate,snapshotfilenumber,wikidata,wikipedia",
+            active: true
+          },
+          {
+            name: "domains_siblings",
+            id: "domain_id",
+            fields: "domain_id,sibling_id,snapshotdate,snapshotfilenumber",
+            active: true
+          }
+        ],
+        importmode: "merge"
+      },
+      fields: {
+        fields: [
+          {
+            name: "fields",
+            id: "id",
+            fields: "id,snapshotdate,snapshotfilenumber,display_name,display_name_alternatives,description,domain_id,works_count,cited_by_count,works_api_url,updated_date",
+            active: true
+          },
+          {
+            name: "fields_ids",
+            id: "field_id",
+            fields: "field_id,snapshotdate,snapshotfilenumber,wikidata,wikipedia",
+            active: true
+          },
+          {
+            name: "fields_siblings",
+            id: "field_id",
+            fields: "field_id,sibling_id,snapshotdate,snapshotfilenumber",
+            active: true
+          },
+          {
+            name: "fields_subfields",
+            id: "field_id",
+            fields: "field_id,subfield_id,snapshotdate,snapshotfilenumber",
+            active: true
+          }
+        ],
+        importmode: "merge"
+      },
       funders: {
         fields: [
           {
@@ -176,6 +234,58 @@ component accessors="true" extends="helper" {
           }
         ],
         importmode: "merge"
+      },
+      subfields: {
+        fields: [
+          {
+            name: "subfields",
+            id: "id",
+            fields: "id,snapshotdate,snapshotfilenumber,display_name,display_name_alternatives,description,field_id,domain_id,works_count,cited_by_count,works_api_url,updated_date",
+            active: true
+          },
+          {
+            name: "subfields_ids",
+            id: "subfield_id",
+            fields: "subfield_id,snapshotdate,snapshotfilenumber,wikidata,wikipedia",
+            active: true
+          },
+          {
+            name: "subfields_siblings",
+            id: "subfield_id",
+            fields: "subfield_id,sibling_id,snapshotdate,snapshotfilenumber",
+            active: true
+          },
+          {
+            name: "subfields_topics",
+            id: "subfield_id",
+            fields: "subfield_id,topic_id,snapshotdate,snapshotfilenumber",
+            active: true
+          }
+        ],
+        importmode: "merge"
+      },
+      topics: {
+        fields: [
+          {
+            name: "topics",
+            id: "id",
+            fields: "id,snapshotdate,snapshotfilenumber,display_name,description,keywords,subfield_id,field_id,domain_id,works_count,cited_by_count,updated_date",
+            active: true
+          },
+          {
+            name: "topics_ids",
+            id: "topic_id",
+            fields: "topic_id,snapshotdate,snapshotfilenumber,openalex,wikipedia",
+            active: true
+          },
+          {
+            name: "topics_siblings",
+            id: "topic_id",
+            fields: "topic_id,sibling_id,snapshotdate,snapshotfilenumber",
+            active: true
+          }
+        ],
+        importmode: "append"
       },
       works: {
         fields: [

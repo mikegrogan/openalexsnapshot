@@ -3,7 +3,7 @@ characterset utf8
 infile '.\csv\topics.csv'
 BADFILE '.\logs\topics.bad'
 DISCARDFILE '.\logs\topics.dsc'
-truncate into table openalex.stage$topics
+append into table openalex.topics
 Fields terminated by '\t' trailing nullcols
 (
   ID,

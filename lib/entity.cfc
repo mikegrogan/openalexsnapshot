@@ -201,6 +201,12 @@ component accessors="true" extends="helper" {
       case "concepts":
         result = processConceptsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
+      case "domains":
+        result = processDomainsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
+        break;
+      case "fields":
+        result = processFieldsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
+        break;
       case "funders":
         result = processFundersData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
@@ -212,6 +218,12 @@ component accessors="true" extends="helper" {
         break;
       case "sources":
         result = processSourcesData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
+        break;
+      case "subfields":
+        result = processSubfieldsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
+        break;
+      case "topics":
+        result = processTopicsData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
         break;
       case "works":
         result = processWorksData(snapshotfile = arguments.snapshotfile, snapshotMetaData = arguments.snapshotMetaData);
@@ -366,6 +378,124 @@ component accessors="true" extends="helper" {
     return result;
   }
 
+  private any function processTopicsData(snapshotfile, snapshotMetaData){
+    var result = {success: false};
+
+    var javaSystem = createObject("java", "java.lang.System");
+
+    if (arguments.snapshotfile.success){
+      try{
+        var inputs = setupEntityCSVFiles("topics");
+
+        // Create a file object
+        var topicsData = fileOpen(arguments.snapshotfile.filepath, "read");
+
+        var flushCounter = 0;
+        var counter = 0;
+        // holds single row of data to process
+        var line = {};
+
+        // loop through rows of data
+        while (!fileIsEOF(topicsData)){
+          line = fileReadLine(topicsData).deserializeJSON();
+
+          if (inputs.data.keyExists("topics")){
+            // topics
+            if (!line.keyExists("keywords")){
+              line.keywords = "";
+            }
+
+            inputs.data.topics.append(line.id);
+            inputs.data.topics.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.topics.append(arguments.snapshotMetaData.filenumber);
+            inputs.data.topics.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
+            inputs.data.topics.append(line.description);
+            (line.keywords.isEmpty()) ? inputs.data.topics.append("") : inputs.data.topics.append(
+              line.keywords.slice(1, min(line.keywords.len(), 100)).toJson()
+            );
+            inputs.data.topics.append(line.subfield.id);
+            inputs.data.topics.append(line.field.id);
+            inputs.data.topics.append(line.domain.id);
+            inputs.data.topics.append(line.works_count);
+            inputs.data.topics.append(line.cited_by_count);
+            inputs.data.topics.append(line.updated_date);
+
+            inputs.writer.topics.write(inputs.data.topics.toList(this.csvDelimiter));
+            inputs.writer.topics.newLine();
+            inputs.data.topics.clear();
+          }
+
+          // topics ids
+          if (inputs.data.keyExists("topicsids")){
+            if (line.keyExists("ids")){
+              if (!line.ids.keyExists("wikipedia")){
+                line.ids.wikipedia = "";
+              }
+
+              inputs.data.topicsids.append(line.id);
+              inputs.data.topicsids.append(arguments.snapshotMetaData.updateDate);
+              inputs.data.topicsids.append(arguments.snapshotMetaData.filenumber);
+              inputs.data.topicsids.append(line.ids.openalex);
+              inputs.data.topicsids.append(line.ids.wikipedia);
+
+              inputs.writer.topicsids.write(inputs.data.topicsids.toList(this.csvDelimiter));
+              inputs.writer.topicsids.newLine();
+              inputs.data.topicsids.clear();
+            }
+          }
+
+          // topics siblings
+          if (inputs.data.keyExists("topicssiblings")){
+            if (line.keyExists("siblings")){
+              for (var sibling in line.siblings){
+                inputs.data.topicssiblings.append(line.id);
+                inputs.data.topicssiblings.append(sibling.id);
+                inputs.data.topicssiblings.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.topicssiblings.append(arguments.snapshotMetaData.filenumber);
+
+                inputs.writer.topicssiblings.write(inputs.data.topicssiblings.toList(this.csvDelimiter));
+                inputs.writer.topicssiblings.newLine();
+                inputs.data.topicssiblings.clear();
+              }
+            }
+          }
+
+          flushCounter++;
+          if (flushCounter == this.getwriteFlushLimit()){
+            counter = counter + this.getwriteFlushLimit();
+
+            for (var name in inputs.writer){
+              inputs.writer[name].flush();
+            }
+
+            // Reset the flushCounter
+            flushCounter = 0;
+          }
+          line.clear();
+        }
+      }
+      catch (any e){
+        outputError("Error: #e.message#");
+        writeDump(var = line, abort = false, label = "");
+        writeDump(var = e, abort = true, label = "topics error");
+      }
+      finally{
+        fileClose(topicsData);
+        for (var name in inputs.writer){
+          inputs.writer[name].close();
+        }
+
+        for (var csv in inputs.csv){
+          outputSuccess("Finished saving #csv# file to #inputs.csv[csv]#");
+        }
+
+        result.success = true;
+      }
+    }
+
+    return result;
+  }
+
   private any function processWorksData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
@@ -405,27 +535,25 @@ component accessors="true" extends="helper" {
             }
 
             // works
-            if (inputs.data.keyExists("works")){
-              inputs.data.works.append(line.id);
-              inputs.data.works.append(arguments.snapshotMetaData.updateDate);
-              inputs.data.works.append(arguments.snapshotMetaData.filenumber);
-              inputs.data.works.append(line.doi);
-              inputs.data.works.append(line.title.reReplaceNoCase("[\n\r\t]", " ", "all"));
-              inputs.data.works.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
-              inputs.data.works.append(line.publication_year);
-              inputs.data.works.append(line.publication_date);
-              inputs.data.works.append(line.type);
-              inputs.data.works.append(line.cited_by_count);
-              (line.is_retracted) ? inputs.data.works.append("1") : inputs.data.works.append("0");
-              (line.is_paratext) ? inputs.data.works.append("1") : inputs.data.works.append("0");
-              inputs.data.works.append(line.cited_by_api_url);
-              // (line.abstract_inverted_index.isEmpty()) ? inputs.data.works.append("") : inputs.data.works.append(line.abstract_inverted_index.toJson());
-              inputs.data.works.append(line.language);
+            inputs.data.works.append(line.id);
+            inputs.data.works.append(arguments.snapshotMetaData.updateDate);
+            inputs.data.works.append(arguments.snapshotMetaData.filenumber);
+            inputs.data.works.append(line.doi);
+            inputs.data.works.append(line.title.reReplaceNoCase("[\n\r\t]", " ", "all"));
+            inputs.data.works.append(line.display_name.reReplaceNoCase("[\n\r\t]", " ", "all"));
+            inputs.data.works.append(line.publication_year);
+            inputs.data.works.append(line.publication_date);
+            inputs.data.works.append(line.type);
+            inputs.data.works.append(line.cited_by_count);
+            (line.is_retracted) ? inputs.data.works.append("1") : inputs.data.works.append("0");
+            (line.is_paratext) ? inputs.data.works.append("1") : inputs.data.works.append("0");
+            inputs.data.works.append(line.cited_by_api_url);
+            // (line.abstract_inverted_index.isEmpty()) ? inputs.data.works.append("") : inputs.data.works.append(line.abstract_inverted_index.toJson());
+            inputs.data.works.append(line.language);
 
-              inputs.writer.works.write(inputs.data.works.toList(this.csvDelimiter));
-              inputs.writer.works.newLine();
-              inputs.data.works.clear();
-            }
+            inputs.writer.works.write(inputs.data.works.toList(this.csvDelimiter));
+            inputs.writer.works.newLine();
+            inputs.data.works.clear();
           }
 
           // authorships
@@ -1772,6 +1900,12 @@ component accessors="true" extends="helper" {
       case "concepts":
         result = mergeConceptsStageWithMain(parallel);
         break;
+      case "domains":
+        result = mergeDomainsStageWithMain(parallel);
+        break;
+      case "fields":
+        result = mergeFieldsStageWithMain(parallel);
+        break;
       case "funders":
         result = mergeFundersStageWithMain(parallel);
         break;
@@ -1784,9 +1918,124 @@ component accessors="true" extends="helper" {
       case "sources":
         result = mergeSourcesStageWithMain(parallel);
         break;
+      case "subfields":
+        result = mergeSubfieldsStageWithMain(parallel);
+        break;
+      case "topics":
+        result = mergeTopicsStageWithMain(parallel);
+        break;
       case "works":
         result = mergeWorksStageWithMain(parallel);
         break;
+    }
+
+    return result;
+  }
+
+  private any function mergeTopicsStageWithMain(parallel = 1){
+    var result = {
+      success: true,
+      data: {
+        topics: {success: false, recordcount: 0},
+        topics_ids: {success: false, recordcount: 0},
+        topics_siblings: {success: false, recordcount: 0}
+      }
+    };
+
+    var activeTables = this.tables.getActiveTableNamesList("topics");
+
+    // topics
+    if (activeTables.listFind("topics")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.topics dest
+    USING #getSchema()#.stage$topics src
+    ON (dest.id = src.id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.display_name = src.display_name,
+          dest.description = src.description,
+          dest.keywords = src.keywords,
+          dest.subfield_id = src.subfield_id,
+          dest.field_id = src.field_id,
+          dest.domain_id = src.domain_id,
+          dest.works_count=src.works_count,
+          dest.cited_by_count=src.cited_by_count,
+          dest.updated_date=src.updated_date
+    WHEN NOT MATCHED THEN
+        INSERT (id, snapshotdate, snapshotfilenumber, display_name, description, keywords, subfield_id, field_id, domain_id, 
+        works_count, cited_by_count, updated_date)
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.display_name, src.description, src.keywords, src.subfield_id, 
+        src.field_id, src.domain_id, src.works_count, src.cited_by_count, src.updated_date)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.topics.success = true;
+        result.data.topics.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.topics.recordcount# staging topics records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // ids
+    if (activeTables.listFind("topicsids")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.topics_ids dest
+    USING #getSchema()#.stage$topics_ids src
+    ON (dest.topic_id = src.topic_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber,
+          dest.openalex=src.openalex,
+          dest.wikipedia=src.wikipedia
+    WHEN NOT MATCHED THEN
+        INSERT (topic_id, snapshotdate, snapshotfilenumber, openalex, wikipedia)
+        VALUES (src.topic_id, src.snapshotdate, src.snapshotfilenumber, src.openalex, src.wikipedia)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.topics_ids.success = true;
+        result.data.topics_ids.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.topics_ids.recordcount# staging topics_ids records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // siblings
+    if (activeTables.listFind("topicssiblings")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.topics_siblings dest
+    USING #getSchema()#.stage$topics_siblings src
+    ON (dest.topic_id = src.topic_id AND dest.sibling_id = src.sibling_id)
+    WHEN MATCHED THEN
+        UPDATE SET
+          dest.snapshotdate = src.snapshotdate,
+          dest.snapshotfilenumber = src.snapshotfilenumber
+    WHEN NOT MATCHED THEN
+        INSERT (topic_id, sibling_id, snapshotdate, snapshotfilenumber)
+        VALUES (src.topic_id, src.sibling_id, src.snapshotdate, src.snapshotfilenumber)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.topics_siblings.success = true;
+        result.data.topics_siblings.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.topics_siblings.recordcount# staging topics_siblings records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
     }
 
     return result;
