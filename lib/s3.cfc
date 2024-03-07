@@ -83,7 +83,7 @@ component extends="helper" {
 
     for (manifest in arguments.entity){
       var externalfile = application.openalexbaseurl & manifest & "/manifest";
-      var localfile = application.localpath & "manifest/" & manifest & ".json";
+      var localfile = application.localpath & "files\manifest\" & manifest & ".json";
       var downloadResult = downloadFileFromOA(externalFile = externalfile, returnData = true);
 
       // want to sort the manifest so it's easier to read
@@ -173,7 +173,7 @@ component extends="helper" {
       result.success = true;
     }
 
-    var localfile = application.localpath & "manifest/" & entity & "_merged.json";
+    var localfile = application.localpath & "files\manifest\" & entity & "_merged.json";
     result.data = result.data.sort(function(e1, e2){
       return compare(e1.url, e2.url);
     });

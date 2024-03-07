@@ -135,7 +135,7 @@ component accessors="true" {
   public any function deleteEntityCsvDirectory(entity){
     var result = {success: true};
 
-    var csvDir = "#application.localpath#loader\#arguments.entity#\csv\";
+    var csvDir = "#application.localpath#files\loader\#arguments.entity#\csv\";
     var fileList = directoryList(csvDir, false, "name", "*.csv");
 
     try{
@@ -165,7 +165,7 @@ component accessors="true" {
 
     cfexecute(
       name = "C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe",
-      arguments = "-File #application.localpath#loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" -importmode ""#importmode#""",
+      arguments = "-File #application.localpath#files\loader\#arguments.entity#\run.ps1 -oraclepath #application.localpath#files\loader\#arguments.entity# -environment #application.environment# -importlist ""#importlist#"" -importmode ""#importmode#""",
       variable = "runoutput",
       errorVariable = "err",
       timeout = "1000"

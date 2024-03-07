@@ -28,7 +28,7 @@ component accessors="true" extends="helper" {
         writeOutput("<div id=""merge-#arguments.entity#-#dateFormat(merged.updateDate, "yyyy-mm-dd")#"" class=""snapshot"" style=""background-color:#getRandomColor()#;"">");
         outputH2("#uCase(arguments.entity)# Merged &##10142; #dateFormat(merged.updateDate, "yyyy-mm-dd")# &##10142; #uCase(merged.filename)#");
 
-        var compressedFilePath = application.localpath & "compressed\#merged.updateDate#\#merged.filename#";
+        var compressedFilePath = application.localpath & "files\compressed\#merged.updateDate#\#merged.filename#";
         if (!directoryExists(getDirectoryFromPath(compressedFilePath))){
           directoryCreate(getDirectoryFromPath(compressedFilePath));
         }
@@ -40,7 +40,7 @@ component accessors="true" extends="helper" {
         if (compressedFile.success){
           outputSuccess("Finished downloading compressed file to #compressedFilePath#");
           flush;
-          var uncompressedPath = application.localpath & "loader\mergeids\csv\";
+          var uncompressedPath = application.localpath & "files\loader\mergeids\csv\";
 
           if (!directoryExists(uncompressedPath)){
             directoryCreate(uncompressedPath);

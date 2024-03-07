@@ -97,7 +97,7 @@ component accessors="true" extends="helper" {
         outputH2("#uCase(arguments.entity)# &##10142; #dateFormat(snapshot.updateDate, "yyyy-mm-dd")# &##10142; #uCase(snapshot.filename)# (File #snapshot.filenumber# of #snapshot.totalfiles#) contains #numberFormat(snapshot.meta.record_count)# records");
         flush;
 
-        var compressedFilePath = application.localpath & "compressed\#snapshot.updateDate#\#snapshot.filename#";
+        var compressedFilePath = application.localpath & "files\compressed\#snapshot.updateDate#\#snapshot.filename#";
         if (!directoryExists(getDirectoryFromPath(compressedFilePath))){
           directoryCreate(getDirectoryFromPath(compressedFilePath));
         }
@@ -110,7 +110,7 @@ component accessors="true" extends="helper" {
         if (compressedFile.success){
           outputSuccess("Finished downloading compressed file to #compressedFilePath#");
           flush;
-          var uncompressedPath = application.localpath & "uncompressed\#snapshot.updateDate#\";
+          var uncompressedPath = application.localpath & "files\uncompressed\#snapshot.updateDate#\";
 
           if (!directoryExists(uncompressedPath)){
             directoryCreate(uncompressedPath);
@@ -281,7 +281,7 @@ component accessors="true" extends="helper" {
   private any function getManifestFile(entity){
     var result = {success: false, hash: "", data: []};
 
-    var manifestPath = application.localpath & "manifest/#arguments.entity#.json";
+    var manifestPath = application.localpath & "files\manifest\#arguments.entity#.json";
     if (fileExists(manifestPath)){
       var fileData = fileRead(manifestPath);
       result.hash = hash(fileData, "MD5");
@@ -360,7 +360,7 @@ component accessors="true" extends="helper" {
       var simplifiedName = entitytable.name.reReplaceNocase("_", "", "All");
 
       // set csv path
-      result.csv[simplifiedName] = application.localpath & "loader\#arguments.entity#\csv\#simplifiedName#.csv";
+      result.csv[simplifiedName] = application.localpath & "files\loader\#arguments.entity#\csv\#simplifiedName#.csv";
 
       // create buffered writer
       result.writer[simplifiedName] = createObject("java", "java.io.BufferedWriter").init(
