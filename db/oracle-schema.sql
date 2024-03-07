@@ -23,8 +23,6 @@ DROP TABLE openalex.stage$publishers_ids cascade constraints;
 DROP TABLE openalex.stage$sources cascade constraints;
 DROP TABLE openalex.stage$sources_counts_by_year cascade constraints;
 DROP TABLE openalex.stage$sources_ids cascade constraints;
-DROP TABLE openalex.stage$topics cascade constraints;
-DROP TABLE openalex.stage$topics_ids cascade constraints;
 DROP TABLE openalex.stage$works cascade constraints;
 DROP TABLE openalex.stage$works_primary_locations cascade constraints;
 DROP TABLE openalex.stage$works_locations cascade constraints;
@@ -37,6 +35,21 @@ DROP TABLE openalex.stage$works_mesh cascade constraints;
 DROP TABLE openalex.stage$works_open_access cascade constraints;
 DROP TABLE openalex.stage$works_referenced_works cascade constraints;
 DROP TABLE openalex.stage$works_related_works cascade constraints;
+DROP TABLE openalex.stage$domains cascade constraints;
+DROP TABLE openalex.stage$domains_fields cascade constraints;
+DROP TABLE openalex.stage$domains_ids cascade constraints;
+DROP TABLE openalex.stage$domains_siblings cascade constraints;
+DROP TABLE openalex.stage$fields cascade constraints;
+DROP TABLE openalex.stage$fields_ids cascade constraints;
+DROP TABLE openalex.stage$fields_siblings cascade constraints;
+DROP TABLE openalex.stage$fields_subfields cascade constraints;
+DROP TABLE openalex.stage$subfields cascade constraints;
+DROP TABLE openalex.stage$subfields_ids cascade constraints;
+DROP TABLE openalex.stage$subfields_siblings cascade constraints;
+DROP TABLE openalex.stage$subfields_topics cascade constraints;
+DROP TABLE openalex.stage$topics cascade constraints;
+DROP TABLE openalex.stage$topics_ids cascade constraints;
+DROP TABLE openalex.stage$topics_siblings cascade constraints;
 
 DROP TABLE openalex.stage$mergeids cascade constraints;
 
@@ -63,8 +76,6 @@ DROP TABLE openalex.publishers_ids cascade constraints;
 DROP TABLE openalex.sources cascade constraints;
 DROP TABLE openalex.sources_counts_by_year cascade constraints;
 DROP TABLE openalex.sources_ids cascade constraints;
-DROP TABLE openalex.topics cascade constraints;
-DROP TABLE openalex.topics_ids cascade constraints;
 DROP TABLE openalex.works cascade constraints;
 DROP TABLE openalex.works_primary_locations cascade constraints;
 DROP TABLE openalex.works_locations cascade constraints;
@@ -77,6 +88,21 @@ DROP TABLE openalex.works_mesh cascade constraints;
 DROP TABLE openalex.works_open_access cascade constraints;
 DROP TABLE openalex.works_referenced_works cascade constraints;
 DROP TABLE openalex.works_related_works cascade constraints;
+DROP TABLE openalex.domains cascade constraints;
+DROP TABLE openalex.domains_fields cascade constraints;
+DROP TABLE openalex.domains_ids cascade constraints;
+DROP TABLE openalex.domains_siblings cascade constraints;
+DROP TABLE openalex.fields cascade constraints;
+DROP TABLE openalex.fields_ids cascade constraints;
+DROP TABLE openalex.fields_siblings cascade constraints;
+DROP TABLE openalex.fields_subfields cascade constraints;
+DROP TABLE openalex.subfields cascade constraints;
+DROP TABLE openalex.subfields_ids cascade constraints;
+DROP TABLE openalex.subfields_siblings cascade constraints;
+DROP TABLE openalex.subfields_topics cascade constraints;
+DROP TABLE openalex.topics cascade constraints;
+DROP TABLE openalex.topics_ids cascade constraints;
+DROP TABLE openalex.topics_siblings cascade constraints;
 
 DROP TABLE openalex.entitylatestsync cascade constraints;
 DROP TABLE openalex.entitymergelatestsync cascade constraints;
@@ -494,6 +520,13 @@ CREATE TABLE openalex.topics (
     snapshotfilenumber NUMBER,
     display_name NVARCHAR2(1000),
     description NVARCHAR2(500),
+    keywords NCLOB,
+    subfield_id VARCHAR2(50),
+    field_id VARCHAR2(50),
+    domain_id VARCHAR2(50),
+    works_count NUMBER,
+    cited_by_count NUMBER,
+    updated_date TIMESTAMP,
     constraint pk_topics primary key (id)
 );
 
@@ -512,6 +545,172 @@ CREATE TABLE openalex.topics_ids (
 CREATE TABLE OPENALEX.stage$topics_ids AS
 SELECT * FROM OPENALEX.topics_ids WHERE 1 = 0;
 
+CREATE TABLE openalex.topics_siblings (
+    topic_id VARCHAR2(50),
+    sibling_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    constraint pk_topics_siblings primary key (topic_id,sibling_id)
+);
+
+CREATE TABLE OPENALEX.stage$topics_siblings AS
+SELECT * FROM OPENALEX.topics_siblings WHERE 1 = 0;
+
+CREATE TABLE openalex.subfields (
+    id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    display_name NVARCHAR2(1000),
+    display_name_alternatives NCLOB,
+    description NVARCHAR2(500),
+    field_id VARCHAR2(50),
+    domain_id VARCHAR2(50),
+    works_count NUMBER,
+    cited_by_count NUMBER,
+    works_api_url VARCHAR2(200),
+    updated_date TIMESTAMP,
+    constraint pk_subfields primary key (id)
+);
+
+CREATE TABLE OPENALEX.stage$subfields AS
+SELECT * FROM OPENALEX.subfields WHERE 1 = 0;
+
+CREATE TABLE openalex.subfields_ids (
+    subfield_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    wikidata VARCHAR2(3000),
+    wikipedia VARCHAR2(3000),
+    constraint pk_subfields_ids primary key (subfield_id)
+);
+
+CREATE TABLE OPENALEX.stage$subfields_ids AS
+SELECT * FROM OPENALEX.subfields_ids WHERE 1 = 0;
+
+CREATE TABLE openalex.subfields_topics (
+    subfield_id VARCHAR2(50),
+    topic_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    constraint pk_subfields_topics primary key (subfield_id,topic_id)
+);
+
+CREATE TABLE OPENALEX.stage$subfields_topics AS
+SELECT * FROM OPENALEX.subfields_topics WHERE 1 = 0;
+
+CREATE TABLE openalex.subfields_siblings (
+    subfield_id VARCHAR2(50),
+    sibling_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    constraint pk_subfields_siblings primary key (subfield_id,sibling_id)
+);
+
+CREATE TABLE OPENALEX.stage$subfields_siblings AS
+SELECT * FROM OPENALEX.subfields_siblings WHERE 1 = 0;
+
+CREATE TABLE openalex.fields (
+    id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    display_name NVARCHAR2(1000),
+    display_name_alternatives NCLOB,
+    description NVARCHAR2(500),
+    domain_id VARCHAR2(50),
+    works_count NUMBER,
+    cited_by_count NUMBER,
+    works_api_url VARCHAR2(200),
+    updated_date TIMESTAMP,
+    constraint pk_fields primary key (id)
+);
+
+CREATE TABLE OPENALEX.stage$fields AS
+SELECT * FROM OPENALEX.fields WHERE 1 = 0;
+
+CREATE TABLE openalex.fields_ids (
+    field_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    wikidata VARCHAR2(3000),
+    wikipedia VARCHAR2(3000),
+    constraint pk_fields_ids primary key (field_id)
+);
+
+CREATE TABLE OPENALEX.stage$fields_ids AS
+SELECT * FROM OPENALEX.fields_ids WHERE 1 = 0;
+
+CREATE TABLE openalex.fields_subfields (
+    field_id VARCHAR2(50),
+    subfield_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    constraint pk_fields_subfields primary key (field_id,subfield_id)
+);
+
+CREATE TABLE OPENALEX.stage$fields_subfields AS
+SELECT * FROM OPENALEX.fields_subfields WHERE 1 = 0;
+
+CREATE TABLE openalex.fields_siblings (
+    field_id VARCHAR2(50),
+    sibling_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    constraint pk_fields_siblings primary key (field_id,sibling_id)
+);
+
+CREATE TABLE OPENALEX.stage$fields_siblings AS
+SELECT * FROM OPENALEX.fields_siblings WHERE 1 = 0;
+
+CREATE TABLE openalex.domains (
+    id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    display_name NVARCHAR2(1000),
+    display_name_alternatives NCLOB,
+    description NVARCHAR2(500),
+    works_count NUMBER,
+    cited_by_count NUMBER,
+    works_api_url VARCHAR2(200),
+    updated_date TIMESTAMP,
+    constraint pk_domains primary key (id)
+);
+
+CREATE TABLE OPENALEX.stage$domains AS
+SELECT * FROM OPENALEX.domains WHERE 1 = 0;
+
+CREATE TABLE openalex.domains_ids (
+    domain_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    wikidata VARCHAR2(3000),
+    wikipedia VARCHAR2(3000),
+    constraint pk_domains_ids primary key (domain_id)
+);
+
+CREATE TABLE OPENALEX.stage$domains_ids AS
+SELECT * FROM OPENALEX.domains_ids WHERE 1 = 0;
+
+CREATE TABLE openalex.domains_fields (
+    domain_id VARCHAR2(50),
+    field_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    constraint pk_domains_fields primary key (domain_id,field_id)
+);
+
+CREATE TABLE OPENALEX.stage$domains_fields AS
+SELECT * FROM OPENALEX.domains_fields WHERE 1 = 0;
+
+CREATE TABLE openalex.domains_siblings (
+    domain_id VARCHAR2(50),
+    sibling_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER,
+    constraint pk_domains_siblings primary key (domain_id,sibling_id)
+);
+
+CREATE TABLE OPENALEX.stage$domains_siblings AS
+SELECT * FROM OPENALEX.domains_siblings WHERE 1 = 0;
 
 CREATE TABLE openalex.works (
     id VARCHAR2(50),
@@ -635,7 +834,7 @@ CREATE TABLE openalex.works_biblio (
     issue VARCHAR2(100),
     first_page VARCHAR2(100),
     last_page VARCHAR2(100),
-    constraint pk_work_id primary key (work_id)
+    constraint pk_works_biblio primary key (work_id)
 );
 
 -- ALTER TABLE openalex.works_biblio
@@ -732,7 +931,7 @@ CREATE TABLE openalex.works_related_works (
     related_work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER,
-    constraint works_related_works primary key (work_id,related_work_id)
+    constraint pk_works_related_works primary key (work_id,related_work_id)
 );
 
 -- ALTER TABLE openalex.works_related_works
