@@ -5,10 +5,10 @@
  *
  * @author Mike Grogan
  */
-component accessors="true" extends="lib.helper" {
+component accessors="true" extends="helper" {
 
   function init(){
-    this.entity = new lib.entity();
+    this.entity = new entity();
 
     return this;
   }
@@ -111,7 +111,7 @@ component accessors="true" extends="lib.helper" {
    * Script setup actions
    */
   public any function preSaveActions(){
-    writeOutput("<link rel=""stylesheet"" href=""assets/main.css"">");
+    writeOutput("<link rel=""stylesheet"" href=""\#application.webpath#\assets\main.css"">");
 
     outputNormal("Script environment is #application.environment#. Change settings in your settings.json file.");
 

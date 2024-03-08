@@ -11,12 +11,13 @@ component {
   // e.g. (getDirectoryFromPath(getCurrentTemplatePath()) & "../../../../config/settings.json")
   this.mappings = {
     "/settings.json": (getDirectoryFromPath(getCurrentTemplatePath()) & "../../config/passwords/cron/settings.json"),
-    "/root": getDirectoryFromPath(getCurrentTemplatePath())
+    "/lib": (getDirectoryFromPath(getCurrentTemplatePath()) & "lib")
   };
 
   function onApplicationStart(){
     structClear(application);
     application.localpath = getDirectoryFromPath(getCurrentTemplatePath());
+    application.webpath = listlast(getDirectoryFromPath(getCurrentTemplatePath()),"\");
     Application.openalexbaseurl = "https://openalex.s3.amazonaws.com/data/";
 
     getSettings();

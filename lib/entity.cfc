@@ -9,9 +9,9 @@ component accessors="true" extends="helper" {
     this.csvDelimiter = chr(9); // tab
     this.setwriteFlushLimit(500);
     this.charset = createObject("java", "java.nio.charset.Charset").forName("UTF-8");
-    this.s3 = new lib.s3();
+    this.s3 = new s3();
     this.tables = new tableSchema();
-    this.merge = new lib.merge();
+    this.merge = new merge();
 
     return this;
   }
