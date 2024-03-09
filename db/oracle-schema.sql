@@ -489,7 +489,7 @@ CREATE TABLE openalex.sources_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER,
-    constraint pk_sources_counts_by_year primary key (source_id)
+    constraint pk_sources_counts_by_year primary key (source_id,year)
 );
 
 CREATE TABLE OPENALEX.stage$sources_counts_by_year AS
