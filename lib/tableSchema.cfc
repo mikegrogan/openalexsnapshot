@@ -360,6 +360,12 @@ component accessors="true" extends="helper" {
             id: "work_id",
             fields: "work_id,related_work_id,snapshotdate,snapshotfilenumber",
             active: true
+          },
+          {
+            name: "works_topics",
+            id: "work_id",
+            fields: "work_id,topic_id,snapshotdate,snapshotfilenumber,score,subfield_id,field_id,domain_id",
+            active: true
           }
         ],
         importmode: "append"

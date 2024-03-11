@@ -66,7 +66,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -378,7 +378,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  
+
   private any function processSubfieldsData(snapshotfile, snapshotMetaData){
     var result = {success: false};
 
@@ -1013,6 +1013,26 @@ component accessors="true" extends="helper" {
               inputs.writer.worksRelatedWorks.write(inputs.data.worksRelatedWorks.toList(this.csvDelimiter));
               inputs.writer.worksRelatedWorks.newLine();
               inputs.data.worksRelatedWorks.clear();
+            }
+          }
+
+          // works topics
+          if (inputs.data.keyExists("workstopics")){
+            if (line.keyExists("topics")){
+              for (var topic in line.topics){
+                inputs.data.workstopics.append(line.id);
+                inputs.data.workstopics.append(topic.id);
+                inputs.data.workstopics.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.workstopics.append(arguments.snapshotMetaData.filenumber);
+                inputs.data.workstopics.append(topic.score);
+                inputs.data.workstopics.append(topic.subfield.id);
+                inputs.data.workstopics.append(topic.field.id);
+                inputs.data.workstopics.append(topic.domain.id);
+
+                inputs.writer.workstopics.write(inputs.data.workstopics.toList(this.csvDelimiter));
+                inputs.writer.workstopics.newLine();
+                inputs.data.workstopics.clear();
+              }
             }
           }
 
@@ -2322,7 +2342,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeSubfieldsStageWithMain(parallel=1){
+  private any function mergeSubfieldsStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -2583,7 +2603,8 @@ component accessors="true" extends="helper" {
         works_open_access: {success: false, recordcount: 0},
         works_primary_locations: {success: false, recordcount: 0},
         works_referenced_works: {success: false, recordcount: 0},
-        works_related_works: {success: false, recordcount: 0}
+        works_related_works: {success: false, recordcount: 0},
+        works_topics: {success: false, recordcount: 0}
       }
     };
 
@@ -2980,6 +3001,37 @@ component accessors="true" extends="helper" {
         result.data.works_related_works.success = true;
         result.data.works_related_works.recordcount = qryresult.recordcount;
         outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_related_works.recordcount# staging works_related_works records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // topics
+    if (activeTables.listFind("workstopics")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.works_topics dest
+        USING #getSchema()#.stage$works_topics src
+        ON (dest.work_id = src.work_id AND dest.topic_id = src.topic_id)
+        WHEN MATCHED THEN
+            UPDATE SET
+                dest.snapshotdate = src.snapshotdate,
+                dest.snapshotfilenumber = src.snapshotfilenumber,
+                dest.score = src.score,
+                dest.subfield_id = src.subfield_id,
+                dest.field_id = src.field_id,
+                dest.domain_id = src.domain_id
+        WHEN NOT MATCHED THEN
+            INSERT (work_id,topic_id,snapshotdate, snapshotfilenumber, score,subfield_id,field_id,domain_id)
+            VALUES (src.work_id,src.topic_id,src.snapshotdate,src.snapshotfilenumber,src.score,src.subfield_id,src.field_id,src.domain_id)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.works_topics.success = true;
+        result.data.works_topics.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.works_topics.recordcount# staging works_topics records with main");
         flush;
       }
       else{
@@ -3576,9 +3628,9 @@ component accessors="true" extends="helper" {
     }
 
     return result;
-  }  
+  }
 
-  private any function mergeDomainsStageWithMain(parallel=1){
+  private any function mergeDomainsStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
@@ -3713,7 +3765,7 @@ component accessors="true" extends="helper" {
     return result;
   }
 
-  private any function mergeFieldsStageWithMain(parallel=1){
+  private any function mergeFieldsStageWithMain(parallel = 1){
     var result = {
       success: true,
       data: {
