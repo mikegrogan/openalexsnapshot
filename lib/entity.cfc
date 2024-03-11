@@ -1020,6 +1020,16 @@ component accessors="true" extends="helper" {
           if (inputs.data.keyExists("workstopics")){
             if (line.keyExists("topics")){
               for (var topic in line.topics){
+                if (!topic.keyExists("subfield")){
+                  topic.subfield.id = "";
+                }
+                if (!topic.keyExists("field")){
+                  topic.field.id = "";
+                }
+                if (!topic.keyExists("domain")){
+                  topic.domain.id = "";
+                }
+
                 inputs.data.workstopics.append(line.id);
                 inputs.data.workstopics.append(topic.id);
                 inputs.data.workstopics.append(arguments.snapshotMetaData.updateDate);
