@@ -2,7 +2,7 @@
 param (
     [string]$oraclepath = (Get-Location).Path,
     [string]$environment = "local",
-    [string]$importlist = "works,worksauthorships,worksbestoalocations,worksbiblio,worksconcepts,worksids,workslocations,worksmesh,worksopenaccess,worksprimarylocations,worksreferencedworks,worksrelatedworks",
+    [string]$importlist = "works,worksauthorships,worksbestoalocations,worksbiblio,worksconcepts,worksids,workslocations,worksmesh,worksopenaccess,worksprimarylocations,worksreferencedworks,worksrelatedworks,workstopics",
     [string]$importmode = "append"
 )
 
