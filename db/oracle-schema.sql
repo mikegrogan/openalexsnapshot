@@ -120,8 +120,7 @@ CREATE TABLE openalex.entitylatestsync (
     manifesthash VARCHAR2(50),
     createdat TIMESTAMP default CURRENT_TIMESTAMP,
     primary key (entity)
-) COMPRESS FOR ALL OPERATIONS;
--- ) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 CREATE TABLE openalex.entitymergelatestsync (
     entity VARCHAR2(30),
@@ -130,13 +129,13 @@ CREATE TABLE openalex.entitymergelatestsync (
     fileurl VARCHAR2(255),
     createdat TIMESTAMP default CURRENT_TIMESTAMP,
     primary key (entity)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 CREATE TABLE openalex.stage$mergeids (
     merge_date  date,
     id  VARCHAR2(50),
     merge_into_id VARCHAR2(50)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 CREATE TABLE openalex.authors (
     id VARCHAR2(50),
@@ -150,7 +149,7 @@ CREATE TABLE openalex.authors (
     last_known_institution VARCHAR2(50),
     works_api_url VARCHAR2(200),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.authors
 ADD CONSTRAINT pk_authors PRIMARY KEY (id);
@@ -169,7 +168,7 @@ CREATE TABLE openalex.authors_affiliations (
     year NUMBER,
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.authors_affiliations
 ADD CONSTRAINT pk_authors_affiliations PRIMARY KEY (author_id,institution_id,year);
@@ -187,7 +186,7 @@ CREATE TABLE openalex.authors_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.authors_counts_by_year
 ADD CONSTRAINT pk_authors_counts_by_year PRIMARY KEY (author_id,year);
@@ -207,7 +206,7 @@ CREATE TABLE openalex.authors_ids (
     twitter VARCHAR2(200),
     wikipedia VARCHAR2(3000),
     mag NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.authors_ids
 ADD CONSTRAINT pk_authors_ids PRIMARY KEY (author_id);
@@ -233,7 +232,7 @@ CREATE TABLE openalex.concepts (
     image_thumbnail_url VARCHAR2(1000),
     works_api_url VARCHAR2(200),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.concepts
 ADD CONSTRAINT pk_concepts PRIMARY KEY (id);
@@ -248,7 +247,7 @@ CREATE TABLE openalex.concepts_ancestors (
     ancestor_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.concepts_ancestors
 ADD CONSTRAINT pk_concepts_ancestors PRIMARY KEY (concept_id,ancestor_id);
@@ -266,7 +265,7 @@ CREATE TABLE openalex.concepts_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.concepts_counts_by_year
 ADD CONSTRAINT pk_concepts_counts_by_year PRIMARY KEY (concept_id,year);
@@ -286,7 +285,7 @@ CREATE TABLE openalex.concepts_ids (
     umls_aui CLOB, --CHECK (umls_aui IS JSON)
     umls_cui CLOB, --CHECK (umls_cui IS JSON)
     mag NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.concepts_ids
 ADD CONSTRAINT pk_concepts_ids PRIMARY KEY (concept_id);
@@ -302,7 +301,7 @@ CREATE TABLE openalex.concepts_related_concepts (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     score NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.concepts_related_concepts
 ADD CONSTRAINT pk_concepts_related_concepts PRIMARY KEY (concept_id,related_concept_id);
@@ -328,7 +327,7 @@ CREATE TABLE openalex.funders (
     works_count NUMBER,
     cited_by_count NUMBER,
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.funders
 ADD CONSTRAINT pk_funders PRIMARY KEY (id);
@@ -347,7 +346,7 @@ CREATE TABLE openalex.funders_ids (
     wikidata VARCHAR2(50),
     crossref VARCHAR2(50),
     doi VARCHAR2(400)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.funders_ids
 ADD CONSTRAINT pk_funders_ids PRIMARY KEY (funder_id);
@@ -364,7 +363,7 @@ CREATE TABLE openalex.funders_counts_by_year (
     snapshotfilenumber NUMBER,
     works_count NUMBER,
     cited_by_count NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.funders_counts_by_year
 ADD CONSTRAINT pk_funders_counts_by_year PRIMARY KEY (funder_id,year);
@@ -391,7 +390,7 @@ CREATE TABLE openalex.institutions (
     cited_by_count NUMBER,
     works_api_url VARCHAR2(200),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.institutions
 ADD CONSTRAINT pk_institutions PRIMARY KEY (id);
@@ -407,7 +406,7 @@ CREATE TABLE openalex.institutions_associated_institutions (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     relationship VARCHAR2(255)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.institutions_associated_institutions
 ADD CONSTRAINT pk_institutions_associated_institutions PRIMARY KEY (institution_id,associated_institution_id);
@@ -425,7 +424,7 @@ CREATE TABLE openalex.institutions_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.institutions_counts_by_year
 ADD CONSTRAINT pk_institutions_counts_by_year PRIMARY KEY (institution_id,year);
@@ -446,7 +445,7 @@ CREATE TABLE openalex.institutions_geo (
     country VARCHAR2(100),
     latitude NUMBER,
     longitude NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.institutions_geo
 ADD CONSTRAINT pk_institutions_geo PRIMARY KEY (institution_id);
@@ -466,7 +465,7 @@ CREATE TABLE openalex.institutions_ids (
     wikipedia VARCHAR2(3000),
     wikidata VARCHAR2(50),
     mag NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.institutions_ids
 ADD CONSTRAINT pk_institutions_ids PRIMARY KEY (institution_id);
@@ -492,7 +491,7 @@ CREATE TABLE openalex.publishers (
     cited_by_count NUMBER,
     sources_api_url VARCHAR2(200),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.publishers
 ADD CONSTRAINT pk_publishers PRIMARY KEY (id);
@@ -510,7 +509,7 @@ CREATE TABLE openalex.publishers_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.publishers_counts_by_year
 ADD CONSTRAINT pk_publishers_counts_by_year PRIMARY KEY (publisher_id,year);
@@ -527,7 +526,7 @@ CREATE TABLE openalex.publishers_ids (
     openalex VARCHAR2(50),
     ror VARCHAR2(50),
     wikidata VARCHAR2(50)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.publishers_ids
 ADD CONSTRAINT pk_publishers_ids PRIMARY KEY (publisher_id);
@@ -552,7 +551,7 @@ CREATE TABLE openalex.sources (
     homepage_url VARCHAR2(1000),
     works_api_url VARCHAR2(1000),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.sources
 ADD CONSTRAINT pk_sources PRIMARY KEY (id);
@@ -570,7 +569,7 @@ CREATE TABLE openalex.sources_counts_by_year (
     works_count NUMBER,
     cited_by_count NUMBER,
     oa_works_count NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.sources_counts_by_year
 ADD CONSTRAINT pk_sources_counts_by_year PRIMARY KEY (source_id,year);
@@ -590,7 +589,7 @@ CREATE TABLE openalex.sources_ids (
     mag NUMBER,
     wikidata VARCHAR2(50),
     fatcat VARCHAR2(100)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.sources_ids
 ADD CONSTRAINT pk_sources_ids PRIMARY KEY (source_id);
@@ -615,7 +614,7 @@ CREATE TABLE openalex.topics (
     works_count NUMBER,
     cited_by_count NUMBER,
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.topics
 ADD CONSTRAINT pk_topics PRIMARY KEY (id);
@@ -631,7 +630,7 @@ CREATE TABLE openalex.topics_ids (
     snapshotfilenumber NUMBER,
     openalex VARCHAR2(50),
     wikipedia VARCHAR2(3000)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.topics_ids
 ADD CONSTRAINT pk_topics_ids PRIMARY KEY (topic_id);
@@ -646,7 +645,7 @@ CREATE TABLE openalex.topics_siblings (
     sibling_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.topics_siblings
 ADD CONSTRAINT pk_topics_siblings PRIMARY KEY (topic_id,sibling_id);
@@ -669,7 +668,7 @@ CREATE TABLE openalex.subfields (
     cited_by_count NUMBER,
     works_api_url VARCHAR2(200),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.subfields
 ADD CONSTRAINT pk_subfields PRIMARY KEY (id);
@@ -685,7 +684,7 @@ CREATE TABLE openalex.subfields_ids (
     snapshotfilenumber NUMBER,
     wikidata VARCHAR2(3000),
     wikipedia VARCHAR2(3000)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.subfields_ids
 ADD CONSTRAINT pk_subfields_ids PRIMARY KEY (subfield_id);
@@ -700,7 +699,7 @@ CREATE TABLE openalex.subfields_topics (
     topic_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.subfields_topics
 ADD CONSTRAINT pk_subfields_topics PRIMARY KEY (subfield_id,topic_id);
@@ -715,7 +714,7 @@ CREATE TABLE openalex.subfields_siblings (
     sibling_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.subfields_siblings
 ADD CONSTRAINT pk_subfields_siblings PRIMARY KEY (subfield_id,sibling_id);
@@ -737,7 +736,7 @@ CREATE TABLE openalex.fields (
     cited_by_count NUMBER,
     works_api_url VARCHAR2(200),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.fields
 ADD CONSTRAINT pk_fields PRIMARY KEY (id);
@@ -753,7 +752,7 @@ CREATE TABLE openalex.fields_ids (
     snapshotfilenumber NUMBER,
     wikidata VARCHAR2(3000),
     wikipedia VARCHAR2(3000)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.fields_ids
 ADD CONSTRAINT pk_fields_ids PRIMARY KEY (field_id);
@@ -768,7 +767,7 @@ CREATE TABLE openalex.fields_subfields (
     subfield_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.fields_subfields
 ADD CONSTRAINT pk_fields_subfields PRIMARY KEY (field_id,subfield_id);
@@ -783,7 +782,7 @@ CREATE TABLE openalex.fields_siblings (
     sibling_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.fields_siblings
 ADD CONSTRAINT pk_fields_siblings PRIMARY KEY (field_id,sibling_id);
@@ -804,7 +803,7 @@ CREATE TABLE openalex.domains (
     cited_by_count NUMBER,
     works_api_url VARCHAR2(200),
     updated_date TIMESTAMP
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.domains
 ADD CONSTRAINT pk_domains PRIMARY KEY (id);
@@ -820,7 +819,7 @@ CREATE TABLE openalex.domains_ids (
     snapshotfilenumber NUMBER,
     wikidata VARCHAR2(3000),
     wikipedia VARCHAR2(3000)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.domains_ids
 ADD CONSTRAINT pk_domains_ids PRIMARY KEY (domain_id);
@@ -835,7 +834,7 @@ CREATE TABLE openalex.domains_fields (
     field_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.domains_fields
 ADD CONSTRAINT pk_domains_fields PRIMARY KEY (domain_id,field_id);
@@ -850,7 +849,7 @@ CREATE TABLE openalex.domains_siblings (
     sibling_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.domains_siblings
 ADD CONSTRAINT pk_domains_siblings PRIMARY KEY (domain_id,sibling_id);
@@ -875,7 +874,7 @@ CREATE TABLE openalex.works (
     is_paratext NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     cited_by_api_url VARCHAR2(200),
     language VARCHAR2(50)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works
 ADD CONSTRAINT pk_works PRIMARY KEY (id);
@@ -901,7 +900,7 @@ CREATE TABLE openalex.works_primary_locations (
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_primary_locations
 ADD CONSTRAINT pk_works_primary_locations PRIMARY KEY (unique_id);
@@ -927,7 +926,7 @@ CREATE TABLE openalex.works_locations (
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_locations
 ADD CONSTRAINT pk_works_locations PRIMARY KEY (unique_id);
@@ -954,7 +953,7 @@ CREATE TABLE openalex.works_best_oa_locations (
     is_oa NUMBER(1,0),  -- Assuming 1 or 0 for boolean values
     version VARCHAR2(50),
     license VARCHAR2(50)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_best_oa_locations
 ADD CONSTRAINT pk_works_best_oa_locations PRIMARY KEY (unique_id);
@@ -981,7 +980,7 @@ CREATE TABLE openalex.works_authorships (
     raw_author_name NCLOB,
     institution_id VARCHAR2(50),
     raw_affiliation_string NCLOB
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_authorships
 ADD CONSTRAINT pk_works_authorships PRIMARY KEY (unique_id);
@@ -1002,7 +1001,7 @@ CREATE TABLE openalex.works_biblio (
     issue VARCHAR2(100),
     first_page VARCHAR2(100),
     last_page VARCHAR2(100)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_biblio
 ADD CONSTRAINT pk_works_biblio PRIMARY KEY (work_id);
@@ -1021,7 +1020,7 @@ CREATE TABLE openalex.works_concepts (
     snapshotdate date,
     snapshotfilenumber NUMBER,
     score NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_concepts
 ADD CONSTRAINT pk_works_concepts PRIMARY KEY (work_id,concept_id);
@@ -1044,7 +1043,7 @@ CREATE TABLE openalex.works_ids (
     mag NUMBER,
     pmid VARCHAR2(100),
     pmcid VARCHAR2(100)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_ids
 ADD CONSTRAINT pk_works_ids PRIMARY KEY (work_id);
@@ -1065,7 +1064,7 @@ CREATE TABLE openalex.works_mesh (
     qualifier_ui VARCHAR2(50),
     qualifier_name VARCHAR2(100),
     is_major_topic NUMBER(1,0)  -- Assuming 1 or 0 for boolean values
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_mesh
 ADD CONSTRAINT pk_works_mesh PRIMARY KEY (work_id,merge_id);
@@ -1086,7 +1085,7 @@ CREATE TABLE openalex.works_open_access (
     oa_status VARCHAR2(50),
     oa_url VARCHAR2(4000),
     any_repository_has_fulltext NUMBER(1,0)  -- Assuming 1 or 0 for boolean values
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_open_access
 ADD CONSTRAINT pk_works_open_access PRIMARY KEY (work_id);
@@ -1104,7 +1103,7 @@ CREATE TABLE openalex.works_referenced_works (
     referenced_work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_referenced_works
 ADD CONSTRAINT pk_works_referenced_works PRIMARY KEY (work_id,referenced_work_id);
@@ -1122,7 +1121,7 @@ CREATE TABLE openalex.works_related_works (
     related_work_id VARCHAR2(50),
     snapshotdate date,
     snapshotfilenumber NUMBER
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 ALTER TABLE openalex.works_related_works
 ADD CONSTRAINT pk_works_related_works PRIMARY KEY (work_id,related_work_id);
@@ -1144,7 +1143,7 @@ CREATE TABLE openalex.works_topics (
     subfield_id VARCHAR2(50),
     field_id VARCHAR2(50),
     domain_id VARCHAR2(50)
-) COMPRESS FOR ALL OPERATIONS;
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
 
 --ALTER TABLE openalex.works_topics COMPRESS FOR ALL OPERATIONS
 ALTER TABLE openalex.works_topics
