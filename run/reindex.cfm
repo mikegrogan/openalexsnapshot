@@ -6,5 +6,8 @@
   // Just update the entity as necessary and run in a browser
 
   api = new lib.tableSchema();
-  api.rebuildPrimaryKeyIndex(entity="works");
+
+  api.preSaveActions();
+  api.rebuildPrimaryKeyIndex(entity="topics");
+  api.postSaveActions();
 </cfscript>

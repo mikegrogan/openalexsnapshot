@@ -6,6 +6,31 @@ component accessors="true" {
     return this;
   }
 
+  /**
+   * Script setup actions
+   */
+  public any function preSaveActions(){
+    writeOutput("<link rel=""stylesheet"" href=""\#application.webpath#\assets\main.css"">");
+
+    outputNormal("Script environment is #application.environment#. Change settings in your settings.json file.");
+
+    // javascript output to update page as script progresses
+    jSBookmarkFunction();
+    // hoping to run merge queries in Oracle in parallel
+    queryExecute("ALTER SESSION enable PARALLEL DML", {}, {datasource: getDatasource(), result: "qryresult"});
+  }
+
+  /**
+   * Script complete actions
+   */
+  public any function postSaveActions(){
+    queryExecute("ALTER SESSION disable PARALLEL DML", {}, {datasource: getDatasource(), result: "qryresult"});
+
+    var runTimeInSeconds = dateDiff("s", getPageContext().GetFusionContext().GetStartTime(), now());
+    var runTimeInMinutes = numberFormat(runTimeInSeconds / 60, ".__");
+    outputImportant("Script took #runTimeInMinutes# minutes to run");
+  }
+
   public string function getRandomColor(){
     // var letters="0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F";
 
