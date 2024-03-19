@@ -2,7 +2,7 @@
 param (
     [string]$oraclepath = (Get-Location).Path,
     [string]$environment = "local",
-    [string]$importlist = "authors,authorsaffiliations,authorscountsbyyear,authorsids",
+    [string]$importlist = "authors,authorsaffiliations,authorscountsbyyear,authorsids,authorsconcepts",
     [string]$importmode = "append"
 )
 

@@ -34,9 +34,15 @@ component accessors="true" extends="helper" {
             id: "author_id",
             fields: "author_id,snapshotdate,snapshotfilenumber,openalex,orcid,scopus,twitter,wikipedia,mag",
             active: true
+          },
+          {
+            name: "authors_concepts",
+            id: "author_id",
+            fields: "author_id,concept_id,snapshotdate,snapshotfilenumber,score",
+            active: true
           }
         ],
-        importmode: "append"
+        importmode: "merge"
       },
       concepts: {
         fields: [

@@ -8,6 +8,6 @@
   api = new lib.tableSchema();
 
   api.preSaveActions();
-  api.rebuildPrimaryKeyIndex(entity="topics");
+  api.rebuildPrimaryKeyIndex(entity="authors");
   api.postSaveActions();
 </cfscript>

@@ -66,7 +66,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
+  private any function processEntitySnapshots(required entity, snapshotLimit){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -2092,6 +2092,23 @@ component accessors="true" extends="helper" {
             inputs.data.authorsids.clear();
           }
 
+          // AUTHORS Concepts
+          if (inputs.data.keyExists("authorsconcepts")){
+            if (line.keyExists("x_concepts")){
+              for (var concepts in line.x_concepts){
+                inputs.data.authorsconcepts.append(line.id);
+                inputs.data.authorsconcepts.append(concepts.id);
+                inputs.data.authorsconcepts.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.authorsconcepts.append(arguments.snapshotMetaData.filenumber);
+                inputs.data.authorsconcepts.append(concepts.score);
+
+                inputs.writer.authorsconcepts.write(inputs.data.authorsconcepts.toList(this.csvDelimiter));
+                inputs.writer.authorsconcepts.newLine();
+                inputs.data.authorsconcepts.clear();
+              }
+            }
+          }
+
           flushCounter++;
           if (flushCounter == this.getwriteFlushLimit()){
             counter = counter + this.getwriteFlushLimit();
@@ -4034,7 +4051,8 @@ component accessors="true" extends="helper" {
         authors: {success: false, recordcount: 0},
         authorsaffiliations: {success: false, recordcount: 0},
         authors_counts_by_year: {success: false, recordcount: 0},
-        authors_ids: {success: false, recordcount: 0}
+        authors_ids: {success: false, recordcount: 0},
+        authorsconcepts: {success: false, recordcount: 0}
       }
     };
 
@@ -4048,6 +4066,8 @@ component accessors="true" extends="helper" {
     ON (dest.id = src.id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.orcid = src.orcid,
             dest.display_name = src.display_name,
             dest.display_name_alternatives=src.display_name_alternatives,
@@ -4057,9 +4077,9 @@ component accessors="true" extends="helper" {
             dest.works_api_url=src.works_api_url,
             dest.updated_date=src.updated_date
     WHEN NOT MATCHED THEN
-        INSERT (id, orcid, display_name, display_name_alternatives,works_count,cited_by_count,
+        INSERT (id, snapshotdate,snapshotfilenumber, orcid, display_name, display_name_alternatives,works_count,cited_by_count,
           last_known_institution,works_api_url,updated_date)
-        VALUES (src.id, src.orcid, src.display_name, src.display_name_alternatives,src.works_count,src.cited_by_count,
+        VALUES (src.id, src.snapshotdate, src.snapshotfilenumber, src.orcid, src.display_name, src.display_name_alternatives,src.works_count,src.cited_by_count,
           src.last_known_institution,src.works_api_url,src.updated_date)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
@@ -4082,8 +4102,8 @@ component accessors="true" extends="helper" {
     USING #getSchema()#.stage$authors_affiliations src
     ON (dest.author_id = src.author_id AND dest.institution_id = src.institution_id and dest.year = src.year)   
     WHEN NOT MATCHED THEN
-        INSERT (author_id, institution_id, year)
-        VALUES (src.author_id, src.institution_id, src.year)",
+        INSERT (author_id, institution_id, year,snapshotdate,snapshotfilenumber)
+        VALUES (src.author_id, src.institution_id, src.year,src.snapshotdate,src.snapshotfilenumber)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -4110,8 +4130,8 @@ component accessors="true" extends="helper" {
             dest.cited_by_count=src.cited_by_count,
             dest.oa_works_count=src.oa_works_count
     WHEN NOT MATCHED THEN
-        INSERT (author_id,year,works_count,cited_by_count,oa_works_count)
-        VALUES (src.author_id,src.year,src.works_count,src.cited_by_count,src.oa_works_count)",
+        INSERT (author_id,year,snapshotdate,snapshotfilenumber,works_count,cited_by_count,oa_works_count)
+        VALUES (src.author_id,src.year,src.snapshotdate,src.snapshotfilenumber,src.works_count,src.cited_by_count,src.oa_works_count)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -4134,6 +4154,8 @@ component accessors="true" extends="helper" {
     ON (dest.author_id = src.author_id)
     WHEN MATCHED THEN
         UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
             dest.openalex=src.openalex,
             dest.orcid=src.orcid,
             dest.scopus=src.scopus,
@@ -4141,8 +4163,8 @@ component accessors="true" extends="helper" {
             dest.wikipedia=src.wikipedia,
             dest.mag=src.mag
     WHEN NOT MATCHED THEN
-        INSERT (author_id,openalex,orcid,scopus,twitter,wikipedia,mag)
-        VALUES (src.author_id,src.openalex,src.orcid,src.scopus,src.twitter,src.wikipedia,src.mag)",
+        INSERT (author_id,snapshotdate,snapshotfilenumber,openalex,orcid,scopus,twitter,wikipedia,mag)
+        VALUES (src.author_id,src.snapshotdate,src.snapshotfilenumber,src.openalex,src.orcid,src.scopus,src.twitter,src.wikipedia,src.mag)",
         {},
         {datasource: getDatasource(), result: "qryresult"}
       );
@@ -4150,6 +4172,34 @@ component accessors="true" extends="helper" {
         result.data.authors_ids.success = true;
         result.data.authors_ids.recordcount = qryresult.recordcount;
         outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authors_ids.recordcount# staging authors_ids records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // authors concepts
+    if (activeTables.listFind("authorsconcepts")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.authors_concepts dest
+    USING #getSchema()#.stage$authors_concepts src
+    ON (dest.author_id = src.author_id AND dest.concept_id = src.concept_id)   
+    WHEN MATCHED THEN
+        UPDATE SET
+            dest.snapshotdate = src.snapshotdate,
+            dest.snapshotfilenumber = src.snapshotfilenumber,
+            dest.score=src.score           
+    WHEN NOT MATCHED THEN
+        INSERT (author_id,concept_id,snapshotdate,snapshotfilenumber,score)
+        VALUES (src.author_id,src.concept_id,src.snapshotdate,src.snapshotfilenumber,src.score)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.authorsconcepts.success = true;
+        result.data.authorsconcepts.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authorsconcepts.recordcount# staging authorsaffiliations records with main");
         flush;
       }
       else{
