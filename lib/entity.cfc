@@ -66,7 +66,7 @@ component accessors="true" extends="helper" {
    * @entity
    * @snapshotLimit set to numeric value if you want to limit the number of snapshot imports. Mostly for debugging purposes
    */
-  private any function processEntitySnapshots(required entity, snapshotLimit){
+  private any function processEntitySnapshots(required entity, snapshotLimit = 1){
     var result = {success: false};
 
     var filesToProcess = getEntityFilesNotComplete(entity = arguments.entity);
@@ -2038,6 +2038,21 @@ component accessors="true" extends="helper" {
                   inputs.writer.authorsaffiliations.newLine();
                   inputs.data.authorsaffiliations.clear();
                 }
+              }
+            }
+          }
+
+          // authors last known institutions
+          if (inputs.data.keyExists("authorslastinstitutions")){
+            if (line.keyExists("last_known_institutions")){
+              for (var lastknown in line.last_known_institutions){
+                inputs.data.authorslastinstitutions.append(line.id);
+                inputs.data.authorslastinstitutions.append(lastknown.id);
+                inputs.data.authorslastinstitutions.append(arguments.snapshotMetaData.updateDate);
+                inputs.data.authorslastinstitutions.append(arguments.snapshotMetaData.filenumber);
+                inputs.writer.authorslastinstitutions.write(inputs.data.authorslastinstitutions.toList(this.csvDelimiter));
+                inputs.writer.authorslastinstitutions.newLine();
+                inputs.data.authorslastinstitutions.clear();
               }
             }
           }
@@ -4050,6 +4065,7 @@ component accessors="true" extends="helper" {
       data: {
         authors: {success: false, recordcount: 0},
         authorsaffiliations: {success: false, recordcount: 0},
+        authorslastinstitutions: {success: false, recordcount: 0},
         authors_counts_by_year: {success: false, recordcount: 0},
         authors_ids: {success: false, recordcount: 0},
         authorsconcepts: {success: false, recordcount: 0}
@@ -4111,6 +4127,29 @@ component accessors="true" extends="helper" {
         result.data.authorsaffiliations.success = true;
         result.data.authorsaffiliations.recordcount = qryresult.recordcount;
         outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authorsaffiliations.recordcount# staging authorsaffiliations records with main");
+        flush;
+      }
+      else{
+        result.success = false;
+      }
+    }
+
+    // authors last known institutions
+    if (activeTables.listFind("authorslastinstitutions")){
+      queryExecute(
+        "MERGE /*+ PARALLEL(dest, #arguments.parallel#) */ INTO #getSchema()#.AUTHORS_LASTINSTITUTIONS dest
+    USING #getSchema()#.stage$AUTHORS_LASTINSTITUTIONS src
+    ON (dest.author_id = src.author_id AND dest.institution_id = src.institution_id)   
+    WHEN NOT MATCHED THEN
+        INSERT (author_id, institution_id,snapshotdate,snapshotfilenumber)
+        VALUES (src.author_id, src.institution_id,src.snapshotdate,src.snapshotfilenumber)",
+        {},
+        {datasource: getDatasource(), result: "qryresult"}
+      );
+      if (isStruct(qryresult)){
+        result.data.authorslastinstitutions.success = true;
+        result.data.authorslastinstitutions.recordcount = qryresult.recordcount;
+        outputSuccess("#getElapsedTime(qryresult.executiontime)# Sucessfully merged #result.data.authorslastinstitutions.recordcount# staging authorslastinstitutions records with main");
         flush;
       }
       else{

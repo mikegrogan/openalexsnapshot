@@ -5,6 +5,7 @@ DROP TABLE openalex.stage$authors_affiliations cascade constraints;
 DROP TABLE openalex.stage$authors_counts_by_year cascade constraints;
 DROP TABLE openalex.stage$authors_ids cascade constraints;
 DROP TABLE openalex.stage$authors_concepts cascade constraints;
+DROP TABLE openalex.stage$authors_lastinstitutions cascade constraints;
 DROP TABLE openalex.stage$concepts cascade constraints;
 DROP TABLE openalex.stage$concepts_ancestors cascade constraints;
 DROP TABLE openalex.stage$concepts_counts_by_year cascade constraints;
@@ -60,6 +61,7 @@ DROP TABLE openalex.authors_affiliations cascade constraints;
 DROP TABLE openalex.authors_counts_by_year cascade constraints;
 DROP TABLE openalex.authors_ids cascade constraints;
 DROP TABLE openalex.authors_concepts cascade constraints;
+DROP TABLE openalex.authors_lastinstitutions cascade constraints;
 DROP TABLE openalex.concepts cascade constraints;
 DROP TABLE openalex.concepts_ancestors cascade constraints;
 DROP TABLE openalex.concepts_counts_by_year cascade constraints;
@@ -179,6 +181,21 @@ ALTER INDEX pk_authors_affiliations REBUILD NOLOGGING PARALLEL 8;
 
 CREATE TABLE OPENALEX.stage$authors_affiliations AS
 SELECT * FROM OPENALEX.authors_affiliations WHERE 1 = 0;
+
+CREATE TABLE openalex.authors_lastinstitutions (
+    author_id VARCHAR2(50),
+    institution_id VARCHAR2(50),
+    snapshotdate date,
+    snapshotfilenumber NUMBER
+) COMPRESS FOR ALL OPERATIONS NOLOGGING;
+
+ALTER TABLE openalex.authors_lastinstitutions
+ADD CONSTRAINT pk_authors_lastinstitutions PRIMARY KEY (author_id,institution_id);
+
+ALTER INDEX pk_authors_lastinstitutions REBUILD NOLOGGING PARALLEL 8;
+
+CREATE TABLE OPENALEX.stage$authors_lastinstitutions AS
+SELECT * FROM OPENALEX.authors_lastinstitutions WHERE 1 = 0;
 
 CREATE TABLE openalex.authors_counts_by_year (
     author_id VARCHAR2(50),

@@ -20,7 +20,13 @@ component accessors="true" extends="helper" {
           {
             name: "authors_affiliations",
             id: "author_id",
-            fields: "author_id,institution_id,year",
+            fields: "author_id,institution_id,year,snapshotdate,snapshotfilenumber",
+            active: true
+          },
+          {
+            name: "authors_lastinstitutions",
+            id: "author_id",
+            fields: "author_id,institution_id,snapshotdate,snapshotfilenumber",
             active: true
           },
           {
@@ -42,7 +48,7 @@ component accessors="true" extends="helper" {
             active: true
           }
         ],
-        importmode: "merge"
+        importmode: "append"
       },
       concepts: {
         fields: [
